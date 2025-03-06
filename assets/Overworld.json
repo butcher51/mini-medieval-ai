@@ -1,0 +1,14 @@
+{ "columns":24,
+ "image":"..\/..\/..\/..\/mini_medival_pack\/Mini-Medieval-8x8\/Overworld.png",
+ "imageheight":744,
+ "imagewidth":192,
+ "margin":0,
+ "name":"Overworld",
+ "spacing":0,
+ "tilecount":2232,
+ "tiledversion":"1.9.2",
+ "tileheight":8,
+ "tilewidth":8,
+ "type":"tileset",
+ "version":"1.9"
+}

@@ -3,12 +3,18 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
 // Zoom level (adjust this to change the game's zoom)
-const ZOOM_LEVEL = 1; // Change this to adjust the game's zoom (1.0 is normal size, 2.0 is double size, 0.5 is half size)
+const ZOOM_LEVEL = 4;
 
 // Make canvas fill the screen
 function resizeCanvas() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
+    
+    // Set default rendering settings
+    ctx.imageSmoothingEnabled = false;
+    ctx.mozImageSmoothingEnabled = false;
+    ctx.webkitImageSmoothingEnabled = false;
+    ctx.msImageSmoothingEnabled = false;
 }
 
 // Initial resize
@@ -17,88 +23,102 @@ resizeCanvas();
 // Handle window resizing
 window.addEventListener('resize', resizeCanvas);
 
-// Tile map configuration
-const BASE_TILE_SIZE = 40; // Base tile size
-const TILE_SIZE = BASE_TILE_SIZE * ZOOM_LEVEL;
-const MAP_WIDTH = 20;
-const MAP_HEIGHT = 15;
+// Map configuration
+const BASE_TILE_SIZE = 8; // Tiled uses 8x8 tiles
+const TILE_SIZE = BASE_TILE_SIZE; // Keep everything in base coordinates
 
-// Calculate the game area size
-const gameWidth = MAP_WIDTH * TILE_SIZE;
-const gameHeight = MAP_HEIGHT * TILE_SIZE;
+// Map dimensions (will be set when map loads)
+let MAP_WIDTH = 0;
+let MAP_HEIGHT = 0;
+let gameWidth = 0;
+let gameHeight = 0;
 
-// Define different tile types
-const TILE_TYPES = {
-    0: { color: '#7ec850', name: 'Grass', image: 'assets/grass.png', layer: 'base' }, // Grass
-    1: { color: '#8b4513', name: 'Wall', image: 'assets/wall.png', layer: 'base' }, // Wall (Collidable)
-    2: { color: '#4169e1', name: 'Water', image: 'assets/water.png', layer: 'base' }, // Water (Collidable)
-    3: { color: '#c2b280', name: 'Sand', image: 'assets/sand.png', layer: 'base' }, // Sand
-    4: { color: '#808080', name: 'Stone', image: 'assets/stone.png', layer: 'base' }, // Stone (Collidable)
-    5: { color: '#228b22', name: 'Forest', image: 'assets/forest.png', layer: 'top' }, // Forest
-    6: { color: '#ffd700', name: 'Coin', image: 'assets/coin.png', layer: 'top' }, // Coin (Collectible)
-};
+// Game state
+let gameMap = null;
+let tilesetImage = null;
+let tilesetData = null;
+let collisionLayer = null;
 
-// Define whether tiles are collidable
-const COLLIDABLE_TILES = [1, 2, 4];
+// Load map data
+async function loadMap() {
+    try {
+        const response = await fetch('assets/maps/test-map.json');
+        gameMap = await response.json();
+        
+        // Set map dimensions
+        MAP_WIDTH = gameMap.width;
+        MAP_HEIGHT = gameMap.height;
+        
+        // Calculate the game area size
+        gameWidth = MAP_WIDTH * TILE_SIZE;
+        gameHeight = MAP_HEIGHT * TILE_SIZE;
+        
+        // Find collision layer
+        collisionLayer = gameMap.layers.find(layer => layer.class === 'collision');
+        
+        // Load tileset
+        const tilesetSource = gameMap.tilesets[0].source;
+        const tilesetName = tilesetSource.split('/').pop().replace('.tsx', '');
+        
+        // Load tileset data
+        const tilesetResponse = await fetch(`assets/${tilesetName}.json`);
+        tilesetData = await tilesetResponse.json();
+        
+        // Load tileset image with promise
+        tilesetImage = new Image();
+        await new Promise((resolve, reject) => {
+            tilesetImage.onload = resolve;
+            tilesetImage.onerror = reject;
+            tilesetImage.src = `assets/${tilesetName}.png`;
+        });
+        
+        // Initialize player position
+        player.x = TILE_SIZE * 2;
+        player.y = TILE_SIZE * 2;
+        player.width = TILE_SIZE;
+        player.height = TILE_SIZE;
+        
+    } catch (error) {
+        console.error('Error loading map:', error);
+    }
+}
 
-// Create a designed level instead of random
-const baseLayer = [
-    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-    [1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,1,0,0,0,2,2,2,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,0,2,2,2,0,0,0,0,0,0,1],
-    [1,0,0,0,4,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1],
-    [1,0,0,0,4,4,0,0,0,0,0,0,0,0,0,1,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,1,0,0,0,0,0,0,0,0,4,0,0,0,0,1],
-    [1,0,0,0,0,1,0,0,0,0,0,0,0,4,4,0,0,0,0,1],
-    [1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-];
-
-const topLayer = [
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,6,0,0,0,0,0,0,0,6,0,0,0,0],
-    [0,0,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,5,5,5,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,5,5,5,0,0,0,0,0,0,6,0,0],
-    [0,0,0,0,0,0,0,0,5,5,5,0,0,0,0,0,0,0,0,0],
-    [0,0,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-];
+// Calculate tile position in tileset
+function getTilePosition(tileIndex) {
+    if (tileIndex === 0) return null; // Empty tile
+    
+    tileIndex--; // Convert to 0-based index
+    const tilesPerRow = Math.floor(tilesetData.imagewidth / BASE_TILE_SIZE);
+    const row = Math.floor(tileIndex / tilesPerRow);
+    const col = tileIndex % tilesPerRow;
+    
+    return {
+        x: col * BASE_TILE_SIZE,
+        y: row * BASE_TILE_SIZE
+    };
+}
 
 // Player object
-const BASE_SPEED = 5; // Base speed
+const BASE_SPEED = 4;
 const player = {
-    x: TILE_SIZE * 2,
-    y: TILE_SIZE * 2,
+    x: 0,
+    y: 0,
     width: TILE_SIZE,
     height: TILE_SIZE,
-    speed: BASE_SPEED * ZOOM_LEVEL,
+    speed: BASE_SPEED,
     coins: 0,
     image: 'assets/player.png'
 };
 
 // Game objects (enemies)
-const BASE_ENEMY_SPEED = 2; // Base enemy speed
+const BASE_ENEMY_SPEED = 1; // Base enemy speed
 const enemies = [
     { 
         x: TILE_SIZE * 10, 
         y: TILE_SIZE * 7, 
         width: TILE_SIZE, 
         height: TILE_SIZE, 
-        speedX: BASE_ENEMY_SPEED * ZOOM_LEVEL, 
+        speedX: BASE_ENEMY_SPEED, 
         speedY: 0,
         image: 'assets/orc.png'
     },
@@ -108,7 +128,7 @@ const enemies = [
         width: TILE_SIZE, 
         height: TILE_SIZE, 
         speedX: 0, 
-        speedY: BASE_ENEMY_SPEED * ZOOM_LEVEL,
+        speedY: BASE_ENEMY_SPEED,
         image: 'assets/orc.png'
     }
 ];
@@ -149,146 +169,162 @@ function checkCollision(rect1, rect2) {
            rect1.y < rect2.y + rect2.height &&
            rect1.y + rect1.height > rect2.y;
 }
-
 function isTileCollidable(x, y) {
-    const tileX = Math.floor(x / TILE_SIZE);
-    const tileY = Math.floor(y / TILE_SIZE);
+    if (!collisionLayer) return false;
+    
+    const tileX = Math.floor(x / BASE_TILE_SIZE);
+    const tileY = Math.floor(y / BASE_TILE_SIZE);
     
     if (tileX < 0 || tileX >= MAP_WIDTH || tileY < 0 || tileY >= MAP_HEIGHT) {
         return true;
     }
     
-    return COLLIDABLE_TILES.includes(baseLayer[tileY][tileX]);
+    const tileIndex = tileY * MAP_WIDTH + tileX;
+    return collisionLayer.data[tileIndex] !== 0;
 }
 
+// Check for coin collection (coins are tiles with index 6 in the items layer)
 function checkCoinCollection(playerX, playerY) {
+    if (!gameMap) return;
+    
+    const itemsLayer = gameMap.layers.find(layer => layer.name === 'Items');
+    if (!itemsLayer) return;
+    
     const tileX = Math.floor(playerX / TILE_SIZE);
     const tileY = Math.floor(playerY / TILE_SIZE);
     
-    if (topLayer[tileY][tileX] === 6) { // Coin
-        topLayer[tileY][tileX] = 0; // Remove coin
+    if (tileX < 0 || tileX >= MAP_WIDTH || tileY < 0 || tileY >= MAP_HEIGHT) return;
+    
+    const tileIndex = tileY * MAP_WIDTH + tileX;
+    const tileId = itemsLayer.data[tileIndex];
+    
+    // Check if the tile is a coin (you'll need to determine the correct tile ID for coins in your tileset)
+    if (tileId === 6) { // Update this ID based on your tileset
+        itemsLayer.data[tileIndex] = 0; // Remove coin
         player.coins++;
     }
 }
 
-// Load tile images
-const tileImages = {};
-function loadTileImages() {
-    Object.entries(TILE_TYPES).forEach(([tileId, tileData]) => {
-        if (tileData.image) {
-            const img = new Image();
-            img.src = tileData.image;
-            tileImages[tileId] = img;
-        }
-    });
-}
-
 // Load entity images (player and enemies)
 const entityImages = {};
-function loadEntityImages() {
+async function loadEntityImages() {
     // Load player image
     if (player.image) {
         const playerImg = new Image();
-        playerImg.src = player.image;
+        await new Promise((resolve, reject) => {
+            playerImg.onload = resolve;
+            playerImg.onerror = reject;
+            playerImg.src = player.image;
+        });
         entityImages.player = playerImg;
     }
 
     // Load enemy image
     if (enemies[0].image) {
         const enemyImg = new Image();
-        enemyImg.src = enemies[0].image;
+        await new Promise((resolve, reject) => {
+            enemyImg.onload = resolve;
+            enemyImg.onerror = reject;
+            enemyImg.src = enemies[0].image;
+        });
         entityImages.enemy = enemyImg;
     }
 }
 
-// Call both image loading functions when the game starts
-loadTileImages();
-loadEntityImages();
+// Draw map layers
+function drawMapLayers() {
+    if (!gameMap || !tilesetImage || !tilesetData) return;
+    if (!tilesetImage.complete) return; // Make sure image is fully loaded
 
-// Draw the base layer (terrain)
-function drawBaseLayer() {
-    const offsetX = (canvas.width - gameWidth) / 2;
-    const offsetY = (canvas.height - gameHeight) / 2;
-
+    const viewportWidth = canvas.width;
+    const viewportHeight = canvas.height;
+    
     ctx.save();
-    ctx.translate(offsetX, offsetY);
     
     // Disable image smoothing for crisp pixel art
     ctx.imageSmoothingEnabled = false;
     ctx.mozImageSmoothingEnabled = false;
     ctx.webkitImageSmoothingEnabled = false;
     ctx.msImageSmoothingEnabled = false;
-
-    for (let y = 0; y < MAP_HEIGHT; y++) {
-        for (let x = 0; x < MAP_WIDTH; x++) {
-            const tileType = baseLayer[y][x];
-            const tileData = TILE_TYPES[tileType];
-            const xPos = x * TILE_SIZE - gameState.cameraX;
-            const yPos = y * TILE_SIZE - gameState.cameraY;
-            
-            if (tileImages[tileType] && tileImages[tileType].complete) {
-                ctx.drawImage(tileImages[tileType], xPos, yPos, TILE_SIZE, TILE_SIZE);
-            } else {
-                ctx.fillStyle = tileData.color;
-                ctx.fillRect(xPos, yPos, TILE_SIZE, TILE_SIZE);
+    
+    // Center the viewport and apply zoom
+    const offsetX = (viewportWidth - gameWidth * ZOOM_LEVEL) / 2;
+    const offsetY = (viewportHeight - gameHeight * ZOOM_LEVEL) / 2;
+    ctx.translate(offsetX, offsetY);
+    ctx.scale(ZOOM_LEVEL, ZOOM_LEVEL);
+    
+    // Set background color
+    if (gameMap.backgroundcolor) {
+        ctx.fillStyle = gameMap.backgroundcolor;
+        ctx.fillRect(0, 0, gameWidth, gameHeight);
+    }
+    
+    // Draw each visible layer
+    gameMap.layers.forEach(layer => {
+        if (layer.class === 'collision') return; // Skip collision layer
+        if (!layer.visible) return;
+        
+        for (let y = 0; y < layer.height; y++) {
+            for (let x = 0; x < layer.width; x++) {
+                const tileIndex = layer.data[y * layer.width + x];
+                if (tileIndex === 0) continue; // Skip empty tiles
+                
+                const pos = getTilePosition(tileIndex);
+                if (!pos) continue;
+                
+                const xPos = x * BASE_TILE_SIZE - gameState.cameraX;
+                const yPos = y * BASE_TILE_SIZE - gameState.cameraY;
+                
+                ctx.drawImage(
+                    tilesetImage,
+                    pos.x, pos.y,
+                    BASE_TILE_SIZE, BASE_TILE_SIZE,
+                    xPos, yPos,
+                    BASE_TILE_SIZE, BASE_TILE_SIZE
+                );
             }
         }
-    }
+    });
+    
     ctx.restore();
 }
 
-// Draw the top layer (entities and decorations)
-function drawTopLayer() {
-    const offsetX = (canvas.width - gameWidth) / 2;
-    const offsetY = (canvas.height - gameHeight) / 2;
-
+// Draw function
+function draw() {
+    // Clear the canvas
+    ctx.fillStyle = 'black';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    drawMapLayers();
+    
+    // Draw entities (player and enemies)
+    const viewportWidth = canvas.width;
+    const viewportHeight = canvas.height;
+    const offsetX = (viewportWidth - gameWidth * ZOOM_LEVEL) / 2;
+    const offsetY = (viewportHeight - gameHeight * ZOOM_LEVEL) / 2;
+    
     ctx.save();
-    ctx.translate(offsetX, offsetY);
     
     // Disable image smoothing for crisp pixel art
     ctx.imageSmoothingEnabled = false;
     ctx.mozImageSmoothingEnabled = false;
     ctx.webkitImageSmoothingEnabled = false;
     ctx.msImageSmoothingEnabled = false;
-
-    // Draw top layer tiles (decorations)
-    for (let y = 0; y < MAP_HEIGHT; y++) {
-        for (let x = 0; x < MAP_WIDTH; x++) {
-            const tileType = topLayer[y][x];
-            if (tileType !== 0) { // Skip empty tiles
-                const tileData = TILE_TYPES[tileType];
-                const xPos = x * TILE_SIZE - gameState.cameraX;
-                const yPos = y * TILE_SIZE - gameState.cameraY;
-                
-                if (tileImages[tileType] && tileImages[tileType].complete) {
-                    ctx.drawImage(tileImages[tileType], xPos, yPos, TILE_SIZE, TILE_SIZE);
-                } else {
-                    ctx.fillStyle = tileData.color;
-                    ctx.fillRect(xPos, yPos, TILE_SIZE, TILE_SIZE);
-                }
-            }
-        }
-    }
-
+    
+    ctx.translate(offsetX, offsetY);
+    ctx.scale(ZOOM_LEVEL, ZOOM_LEVEL);
+    
     // Draw player
     if (entityImages.player && entityImages.player.complete) {
         ctx.drawImage(
             entityImages.player,
             player.x - gameState.cameraX,
             player.y - gameState.cameraY,
-            player.width,
-            player.height
-        );
-    } else {
-        ctx.fillStyle = '#ff0000';
-        ctx.fillRect(
-            player.x - gameState.cameraX,
-            player.y - gameState.cameraY,
-            player.width,
-            player.height
+            BASE_TILE_SIZE,
+            BASE_TILE_SIZE
         );
     }
-
+    
     // Draw enemies
     enemies.forEach(enemy => {
         if (entityImages.enemy && entityImages.enemy.complete) {
@@ -296,21 +332,16 @@ function drawTopLayer() {
                 entityImages.enemy,
                 enemy.x - gameState.cameraX,
                 enemy.y - gameState.cameraY,
-                enemy.width,
-                enemy.height
-            );
-        } else {
-            ctx.fillStyle = '#ff00ff';
-            ctx.fillRect(
-                enemy.x - gameState.cameraX,
-                enemy.y - gameState.cameraY,
-                enemy.width,
-                enemy.height
+                BASE_TILE_SIZE,
+                BASE_TILE_SIZE
             );
         }
     });
-
+    
     ctx.restore();
+    
+    // Draw UI (in screen space, no zoom)
+    drawUI();
 }
 
 // Draw UI
@@ -332,82 +363,115 @@ function update(deltaTime) {
     if (gameState.keys.ArrowDown || gameState.keys.s) dy += 1;
     if (gameState.keys.ArrowUp || gameState.keys.w) dy -= 1;
 
-    // Normalize diagonal movement
-    if (dx !== 0 && dy !== 0) {
-        // Calculate the normalized vector
-        const length = Math.sqrt(dx * dx + dy * dy);
-        dx = dx / length;
-        dy = dy / length;
+    // Normalize diagonal movement and apply speed
+    if (dx !== 0 || dy !== 0) {  // Changed condition to handle all movement
+        if (dx !== 0 && dy !== 0) {
+            const length = Math.sqrt(dx * dx + dy * dy);
+            dx = dx / length;
+            dy = dy / length;
+        }
+        // Apply speed after normalization
+        dx *= player.speed;
+        dy *= player.speed;
     }
 
-    // Apply speed to movement
-    let newX = player.x + dx * player.speed;
-    let newY = player.y + dy * player.speed;
+    // Apply movement and round to prevent sub-pixel positions
+    let newX = Math.round((player.x + dx) * 100) / 100;
+    let newY = Math.round((player.y + dy) * 100) / 100;
 
     // Handle horizontal and vertical movement separately for wall sliding
-    const collisionOffset = 2 * ZOOM_LEVEL;
-    
-    // Check horizontal movement
-    if (!isTileCollidable(newX + collisionOffset, player.y + collisionOffset) &&
-        !isTileCollidable(newX + player.width - collisionOffset, player.y + collisionOffset) &&
-        !isTileCollidable(newX + collisionOffset, player.y + player.height - collisionOffset) &&
-        !isTileCollidable(newX + player.width - collisionOffset, player.y + player.height - collisionOffset)) {
+    let canMoveX = !isTileCollidable(newX, player.y) &&
+        !isTileCollidable(newX + BASE_TILE_SIZE - 1, player.y) &&
+        !isTileCollidable(newX, player.y + BASE_TILE_SIZE - 1) &&
+        !isTileCollidable(newX + BASE_TILE_SIZE - 1, player.y + BASE_TILE_SIZE - 1);
+
+    let canMoveY = !isTileCollidable(player.x, newY) &&
+        !isTileCollidable(player.x + BASE_TILE_SIZE - 1, newY) &&
+        !isTileCollidable(player.x, newY + BASE_TILE_SIZE - 1) &&
+        !isTileCollidable(player.x + BASE_TILE_SIZE - 1, newY + BASE_TILE_SIZE - 1);
+
+    // First try the full movement
+    if (canMoveX) {
         player.x = newX;
+    } else if (dx !== 0) {
+        // If we can't move to the new position, find the closest safe position
+        if (dx > 0) { // Moving right
+            // Align to the left edge of the blocking tile
+            player.x = Math.floor((newX + BASE_TILE_SIZE) / BASE_TILE_SIZE) * BASE_TILE_SIZE - BASE_TILE_SIZE;
+        } else { // Moving left
+            // Align to the right edge of the current tile
+            player.x = Math.floor(player.x / BASE_TILE_SIZE) * BASE_TILE_SIZE;
+        }
     }
 
-    // Check vertical movement
-    if (!isTileCollidable(player.x + collisionOffset, newY + collisionOffset) &&
-        !isTileCollidable(player.x + player.width - collisionOffset, newY + collisionOffset) &&
-        !isTileCollidable(player.x + collisionOffset, newY + player.height - collisionOffset) &&
-        !isTileCollidable(player.x + player.width - collisionOffset, newY + player.height - collisionOffset)) {
+    if (canMoveY) {
         player.y = newY;
+    } else if (dy !== 0) {
+        // If we can't move to the new position, find the closest safe position
+        if (dy > 0) { // Moving down
+            // Align to the top edge of the blocking tile
+            player.y = Math.floor((newY + BASE_TILE_SIZE) / BASE_TILE_SIZE) * BASE_TILE_SIZE - BASE_TILE_SIZE;
+        } else { // Moving up
+            // Align to the bottom edge of the current tile
+            player.y = Math.floor(player.y / BASE_TILE_SIZE) * BASE_TILE_SIZE;
+        }
     }
 
     // Check for coin collection
     checkCoinCollection(player.x + player.width/2, player.y + player.height/2);
 
-    // Update enemies
+    // Update enemies with the same collision logic
     enemies.forEach(enemy => {
-        let newX = enemy.x + enemy.speedX;
-        let newY = enemy.y + enemy.speedY;
-        const collisionOffset = 2 * ZOOM_LEVEL;
+        let newX = Math.round((enemy.x + enemy.speedX) * 100) / 100;
+        let newY = Math.round((enemy.y + enemy.speedY) * 100) / 100;
 
         // Check horizontal movement
-        if (!isTileCollidable(newX + collisionOffset, enemy.y + collisionOffset) &&
-            !isTileCollidable(newX + enemy.width - collisionOffset, enemy.y + collisionOffset) &&
-            !isTileCollidable(newX + collisionOffset, enemy.y + enemy.height - collisionOffset) &&
-            !isTileCollidable(newX + enemy.width - collisionOffset, enemy.y + enemy.height - collisionOffset)) {
+        if (!isTileCollidable(newX, enemy.y) &&
+            !isTileCollidable(newX + BASE_TILE_SIZE - 1, enemy.y) &&
+            !isTileCollidable(newX, enemy.y + BASE_TILE_SIZE - 1) &&
+            !isTileCollidable(newX + BASE_TILE_SIZE - 1, enemy.y + BASE_TILE_SIZE - 1) &&
+            !isTileCollidable(newX, enemy.y + BASE_TILE_SIZE / 2) &&
+            !isTileCollidable(newX + BASE_TILE_SIZE - 1, enemy.y + BASE_TILE_SIZE / 2)) {
             enemy.x = newX;
         } else {
             enemy.speedX *= -1;
+            // Align to tile grid
+            enemy.x = Math.round(enemy.x / BASE_TILE_SIZE) * BASE_TILE_SIZE;
         }
 
         // Check vertical movement
-        if (!isTileCollidable(enemy.x + collisionOffset, newY + collisionOffset) &&
-            !isTileCollidable(enemy.x + enemy.width - collisionOffset, newY + collisionOffset) &&
-            !isTileCollidable(enemy.x + collisionOffset, newY + enemy.height - collisionOffset) &&
-            !isTileCollidable(enemy.x + enemy.width - collisionOffset, newY + enemy.height - collisionOffset)) {
+        if (!isTileCollidable(enemy.x, newY) &&
+            !isTileCollidable(enemy.x + BASE_TILE_SIZE - 1, newY) &&
+            !isTileCollidable(enemy.x, newY + BASE_TILE_SIZE - 1) &&
+            !isTileCollidable(enemy.x + BASE_TILE_SIZE - 1, newY + BASE_TILE_SIZE - 1) &&
+            !isTileCollidable(enemy.x + BASE_TILE_SIZE / 2, newY) &&
+            !isTileCollidable(enemy.x + BASE_TILE_SIZE / 2, newY + BASE_TILE_SIZE - 1)) {
             enemy.y = newY;
         } else {
             enemy.speedY *= -1;
+            // Align to tile grid
+            enemy.y = Math.round(enemy.y / BASE_TILE_SIZE) * BASE_TILE_SIZE;
         }
 
         // Check collision with player
         if (checkCollision(player, enemy)) {
             // Reset player position
-            player.x = TILE_SIZE * 2;
-            player.y = TILE_SIZE * 2;
+            player.x = BASE_TILE_SIZE * 2;
+            player.y = BASE_TILE_SIZE * 2;
             player.coins = 0;
         }
     });
 
     // Update camera to follow player
-    gameState.cameraX = player.x - (gameWidth / ZOOM_LEVEL) / 2 + player.width / 2;
-    gameState.cameraY = player.y - (gameHeight / ZOOM_LEVEL) / 2 + player.height / 2;
+    const viewportWidth = canvas.width / ZOOM_LEVEL;
+    const viewportHeight = canvas.height / ZOOM_LEVEL;
+    
+    gameState.cameraX = player.x - viewportWidth / 2 + player.width / 2;
+    gameState.cameraY = player.y - viewportHeight / 2 + player.height / 2;
 
     // Camera bounds
-    gameState.cameraX = Math.max(0, Math.min(gameState.cameraX, MAP_WIDTH * TILE_SIZE - gameWidth / ZOOM_LEVEL));
-    gameState.cameraY = Math.max(0, Math.min(gameState.cameraY, MAP_HEIGHT * TILE_SIZE - gameHeight / ZOOM_LEVEL));
+    gameState.cameraX = Math.max(0, Math.min(gameState.cameraX, gameWidth - viewportWidth));
+    gameState.cameraY = Math.max(0, Math.min(gameState.cameraY, gameHeight - viewportHeight));
 }
 
 // Main game loop
@@ -424,13 +488,22 @@ function gameLoop(timestamp) {
     update(deltaTime);
 
     // Draw the game layers
-    drawBaseLayer();
-    drawTopLayer();
-    drawUI(); // UI is always on top
+    draw();
 
     // Request next frame
     requestAnimationFrame(gameLoop);
 }
 
-// Start the game loop
-gameLoop(0); 
+// Start the game
+async function startGame() {
+    try {
+        await loadMap();
+        await loadEntityImages();
+        gameLoop();
+    } catch (error) {
+        console.error('Error starting game:', error);
+    }
+}
+
+// Initialize the game
+startGame(); 
