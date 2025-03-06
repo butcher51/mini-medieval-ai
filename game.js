@@ -99,13 +99,13 @@ function getTilePosition(tileIndex) {
 }
 
 // Player object
-const BASE_SPEED = 4;
+const PLAYER_SPEED = 2;
 const player = {
     x: 0,
     y: 0,
     width: TILE_SIZE,
     height: TILE_SIZE,
-    speed: BASE_SPEED,
+    speed: PLAYER_SPEED,
     coins: 0,
     image: 'assets/player.png'
 };
