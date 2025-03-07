@@ -1,6 +1,7 @@
 import { findPath, isPathInRange } from './astar.js';
 import { Player } from './classes/Player.js';
 import { Enemy } from './classes/Enemy.js';
+import { AnimationController } from './classes/AnimationController.js';
 import {
     ZOOM_LEVEL,
     BASE_TILE_SIZE,
@@ -414,6 +415,7 @@ function gameLoop(timestamp) {
 // Start the game
 async function startGame() {
     try {
+        await AnimationController.loadAnimations();
         await loadMap();
         await loadEntityImages();
         gameLoop();
