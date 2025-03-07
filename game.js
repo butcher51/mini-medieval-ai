@@ -1,3 +1,5 @@
+import { findPath, isPathInRange } from './astar.js';
+
 // Get the canvas context
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -72,11 +74,12 @@ async function loadMap() {
             tilesetImage.src = `assets/${tilesetName}.png`;
         });
         
-        // Initialize player position
+        // Initialize player position and move points
         player.x = TILE_SIZE * 2;
         player.y = TILE_SIZE * 2;
         player.width = TILE_SIZE;
         player.height = TILE_SIZE;
+        player.movePoints = 5;
         
     } catch (error) {
         console.error('Error loading map:', error);
@@ -107,29 +110,39 @@ const player = {
     height: TILE_SIZE,
     speed: PLAYER_SPEED,
     coins: 0,
-    image: 'assets/player.png'
+    image: 'assets/player.png',
+    health: 10,
+    maxHealth: 10,
+    damage: 3,
+    movePoints: 5
 };
 
 // Game objects (enemies)
-const BASE_ENEMY_SPEED = 1; // Base enemy speed
+const BASE_ENEMY_SPEED = 1;
 const enemies = [
     { 
         x: TILE_SIZE * 10, 
         y: TILE_SIZE * 7, 
         width: TILE_SIZE, 
-        height: TILE_SIZE, 
-        speedX: BASE_ENEMY_SPEED, 
-        speedY: 0,
-        image: 'assets/orc.png'
+        height: TILE_SIZE,
+        movePoints: 1,
+        health: 5,
+        maxHealth: 5,
+        damage: 2,
+        image: 'assets/orc.png',
+        isActive: true // Used to track if enemy is alive
     },
     { 
         x: TILE_SIZE * 15, 
         y: TILE_SIZE * 3, 
         width: TILE_SIZE, 
-        height: TILE_SIZE, 
-        speedX: 0, 
-        speedY: BASE_ENEMY_SPEED,
-        image: 'assets/orc.png'
+        height: TILE_SIZE,
+        movePoints: 1,
+        health: 5,
+        maxHealth: 5,
+        damage: 2,
+        image: 'assets/orc.png',
+        isActive: true
     }
 ];
 
@@ -137,30 +150,12 @@ const enemies = [
 const gameState = {
     cameraX: 0,
     cameraY: 0,
-    keys: {
-        ArrowUp: false,
-        ArrowDown: false,
-        ArrowLeft: false,
-        ArrowRight: false,
-        w: false,
-        s: false,
-        a: false,
-        d: false
-    }
+    mouseX: 0,
+    mouseY: 0,
+    hoveredTile: { x: 0, y: 0 },
+    currentPath: null,
+    currentTurn: 'player' // 'player' or 'enemies'
 };
-
-// Keyboard event listeners
-window.addEventListener('keydown', (e) => {
-    if (gameState.keys.hasOwnProperty(e.key.toLowerCase())) {
-        gameState.keys[e.key.toLowerCase()] = true;
-    }
-});
-
-window.addEventListener('keyup', (e) => {
-    if (gameState.keys.hasOwnProperty(e.key.toLowerCase())) {
-        gameState.keys[e.key.toLowerCase()] = false;
-    }
-});
 
 // Collision detection
 function checkCollision(rect1, rect2) {
@@ -236,23 +231,12 @@ function drawMapLayers() {
     if (!gameMap || !tilesetImage || !tilesetData) return;
     if (!tilesetImage.complete) return; // Make sure image is fully loaded
 
-    const viewportWidth = canvas.width;
-    const viewportHeight = canvas.height;
-    
-    ctx.save();
-    
     // Disable image smoothing for crisp pixel art
     ctx.imageSmoothingEnabled = false;
     ctx.mozImageSmoothingEnabled = false;
     ctx.webkitImageSmoothingEnabled = false;
     ctx.msImageSmoothingEnabled = false;
-    
-    // Center the viewport and apply zoom
-    const offsetX = (viewportWidth - gameWidth * ZOOM_LEVEL) / 2;
-    const offsetY = (viewportHeight - gameHeight * ZOOM_LEVEL) / 2;
-    ctx.translate(offsetX, offsetY);
-    ctx.scale(ZOOM_LEVEL, ZOOM_LEVEL);
-    
+
     // Set background color
     if (gameMap.backgroundcolor) {
         ctx.fillStyle = gameMap.backgroundcolor;
@@ -272,8 +256,8 @@ function drawMapLayers() {
                 const pos = getTilePosition(tileIndex);
                 if (!pos) continue;
                 
-                const xPos = x * BASE_TILE_SIZE - gameState.cameraX;
-                const yPos = y * BASE_TILE_SIZE - gameState.cameraY;
+                const xPos = x * BASE_TILE_SIZE;
+                const yPos = y * BASE_TILE_SIZE;
                 
                 ctx.drawImage(
                     tilesetImage,
@@ -285,24 +269,10 @@ function drawMapLayers() {
             }
         }
     });
-    
-    ctx.restore();
 }
 
 // Draw function
 function draw() {
-    // Clear the canvas
-    ctx.fillStyle = 'black';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    drawMapLayers();
-    
-    // Draw entities (player and enemies)
-    const viewportWidth = canvas.width;
-    const viewportHeight = canvas.height;
-    const offsetX = (viewportWidth - gameWidth * ZOOM_LEVEL) / 2;
-    const offsetY = (viewportHeight - gameHeight * ZOOM_LEVEL) / 2;
-    
     ctx.save();
     
     // Disable image smoothing for crisp pixel art
@@ -311,149 +281,105 @@ function draw() {
     ctx.webkitImageSmoothingEnabled = false;
     ctx.msImageSmoothingEnabled = false;
     
+    // Clear the canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Center the viewport
+    const viewportWidth = canvas.width / ZOOM_LEVEL;
+    const viewportHeight = canvas.height / ZOOM_LEVEL;
+    
+    // Calculate the offset to center the game area
+    const offsetX = (canvas.width - gameWidth * ZOOM_LEVEL) / 2;
+    const offsetY = (canvas.height - gameHeight * ZOOM_LEVEL) / 2;
+    
+    // Apply transforms in correct order
     ctx.translate(offsetX, offsetY);
     ctx.scale(ZOOM_LEVEL, ZOOM_LEVEL);
+    ctx.translate(-gameState.cameraX, -gameState.cameraY);
     
-    // Draw player
-    if (entityImages.player && entityImages.player.complete) {
-        ctx.drawImage(
-            entityImages.player,
-            player.x - gameState.cameraX,
-            player.y - gameState.cameraY,
-            BASE_TILE_SIZE,
-            BASE_TILE_SIZE
-        );
+    // Draw map layers
+    drawMapLayers();
+    
+    // Draw path if available
+    if (gameState.currentPath && gameState.currentTurn === 'player') {
+        ctx.strokeStyle = isPathInRange(gameState.currentPath, player.movePoints) ? 'rgba(0, 255, 0, 0.5)' : 'rgba(255, 0, 0, 0.5)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        gameState.currentPath.forEach((point, index) => {
+            if (index === 0) {
+                ctx.moveTo(point.x * BASE_TILE_SIZE + BASE_TILE_SIZE / 2, point.y * BASE_TILE_SIZE + BASE_TILE_SIZE / 2);
+            } else {
+                ctx.lineTo(point.x * BASE_TILE_SIZE + BASE_TILE_SIZE / 2, point.y * BASE_TILE_SIZE + BASE_TILE_SIZE / 2);
+            }
+        });
+        ctx.stroke();
     }
     
-    // Draw enemies
-    enemies.forEach(enemy => {
-        if (entityImages.enemy && entityImages.enemy.complete) {
-            ctx.drawImage(
-                entityImages.enemy,
-                enemy.x - gameState.cameraX,
-                enemy.y - gameState.cameraY,
-                BASE_TILE_SIZE,
-                BASE_TILE_SIZE
-            );
-        }
-    });
+    // Draw hovered tile
+    const hoveredTileX = gameState.hoveredTile.x * BASE_TILE_SIZE;
+    const hoveredTileY = gameState.hoveredTile.y * BASE_TILE_SIZE;
+    if (gameState.hoveredTile.x >= 0 && gameState.hoveredTile.x < MAP_WIDTH &&
+        gameState.hoveredTile.y >= 0 && gameState.hoveredTile.y < MAP_HEIGHT) {
+        ctx.strokeStyle = gameState.currentPath && isPathInRange(gameState.currentPath, player.movePoints) ? 'rgba(0, 255, 0, 0.5)' : 'rgba(255, 0, 0, 0.5)';
+        ctx.strokeRect(hoveredTileX, hoveredTileY, BASE_TILE_SIZE, BASE_TILE_SIZE);
+    }
     
+    // Draw entities
+    drawEntities();
+    
+    // Reset transform for UI
     ctx.restore();
     
-    // Draw UI (in screen space, no zoom)
-    drawUI();
-}
-
-// Draw UI
-function drawUI() {
-    ctx.fillStyle = '#fff';
+    // Draw UI in screen space
+    ctx.fillStyle = 'white';
     ctx.font = '20px Arial';
-    ctx.fillText(`Coins: ${player.coins}`, 20, 30);
+    ctx.fillText(`Move Points: ${player.movePoints}`, 10, 30);
+    ctx.fillText(`Turn: ${gameState.currentTurn}`, 10, 60);
+
+    // Draw skip turn button
+    if (gameState.currentTurn === 'player') {
+        ctx.font = '24px Arial';
+        const skipText = 'Skip Turn';
+        const textMetrics = ctx.measureText(skipText);
+        const buttonX = canvas.width / 2 - textMetrics.width / 2;
+        const buttonY = canvas.height - 50;
+        
+        // Store button position and dimensions in gameState for click detection
+        gameState.skipButton = {
+            x: buttonX - 10,
+            y: buttonY - 30,
+            width: textMetrics.width + 20,
+            height: 40
+        };
+        
+        // Draw button background
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+        ctx.fillRect(gameState.skipButton.x, gameState.skipButton.y, gameState.skipButton.width, gameState.skipButton.height);
+        
+        // Draw button text
+        ctx.fillStyle = 'white';
+        ctx.fillText(skipText, buttonX, buttonY);
+    }
 }
 
 // Update game logic
 function update(deltaTime) {
-    // Player movement
-    let dx = 0;
-    let dy = 0;
+    // Update camera to follow player
+    const viewportWidth = canvas.width / ZOOM_LEVEL;
+    const viewportHeight = canvas.height / ZOOM_LEVEL;
     
-    // Calculate movement direction
-    if (gameState.keys.ArrowRight || gameState.keys.d) dx += 1;
-    if (gameState.keys.ArrowLeft || gameState.keys.a) dx -= 1;
-    if (gameState.keys.ArrowDown || gameState.keys.s) dy += 1;
-    if (gameState.keys.ArrowUp || gameState.keys.w) dy -= 1;
-
-    // Normalize diagonal movement and apply speed
-    if (dx !== 0 || dy !== 0) {  // Changed condition to handle all movement
-        if (dx !== 0 && dy !== 0) {
-            const length = Math.sqrt(dx * dx + dy * dy);
-            dx = dx / length;
-            dy = dy / length;
-        }
-        // Apply speed after normalization
-        dx *= player.speed;
-        dy *= player.speed;
-    }
-
-    // Apply movement and round to prevent sub-pixel positions
-    let newX = Math.round((player.x + dx) * 100) / 100;
-    let newY = Math.round((player.y + dy) * 100) / 100;
-
-    // Handle horizontal and vertical movement separately for wall sliding
-    let canMoveX = !isTileCollidable(newX, player.y) &&
-        !isTileCollidable(newX + BASE_TILE_SIZE - 1, player.y) &&
-        !isTileCollidable(newX, player.y + BASE_TILE_SIZE - 1) &&
-        !isTileCollidable(newX + BASE_TILE_SIZE - 1, player.y + BASE_TILE_SIZE - 1);
-
-    let canMoveY = !isTileCollidable(player.x, newY) &&
-        !isTileCollidable(player.x + BASE_TILE_SIZE - 1, newY) &&
-        !isTileCollidable(player.x, newY + BASE_TILE_SIZE - 1) &&
-        !isTileCollidable(player.x + BASE_TILE_SIZE - 1, newY + BASE_TILE_SIZE - 1);
-
-    // First try the full movement
-    if (canMoveX) {
-        player.x = newX;
-    } else if (dx !== 0) {
-        // If we can't move to the new position, find the closest safe position
-        if (dx > 0) { // Moving right
-            // Align to the left edge of the blocking tile
-            player.x = Math.floor((newX + BASE_TILE_SIZE) / BASE_TILE_SIZE) * BASE_TILE_SIZE - BASE_TILE_SIZE;
-        } else { // Moving left
-            // Align to the right edge of the current tile
-            player.x = Math.floor(player.x / BASE_TILE_SIZE) * BASE_TILE_SIZE;
-        }
-    }
-
-    if (canMoveY) {
-        player.y = newY;
-    } else if (dy !== 0) {
-        // If we can't move to the new position, find the closest safe position
-        if (dy > 0) { // Moving down
-            // Align to the top edge of the blocking tile
-            player.y = Math.floor((newY + BASE_TILE_SIZE) / BASE_TILE_SIZE) * BASE_TILE_SIZE - BASE_TILE_SIZE;
-        } else { // Moving up
-            // Align to the bottom edge of the current tile
-            player.y = Math.floor(player.y / BASE_TILE_SIZE) * BASE_TILE_SIZE;
-        }
-    }
-
+    gameState.cameraX = player.x - viewportWidth / 2 + BASE_TILE_SIZE / 2;
+    gameState.cameraY = player.y - viewportHeight / 2 + BASE_TILE_SIZE / 2;
+    
+    // Camera bounds
+    gameState.cameraX = Math.max(0, Math.min(gameState.cameraX, gameWidth - viewportWidth));
+    gameState.cameraY = Math.max(0, Math.min(gameState.cameraY, gameHeight - viewportHeight));
+    
     // Check for coin collection
     checkCoinCollection(player.x + player.width/2, player.y + player.height/2);
-
-    // Update enemies with the same collision logic
+    
+    // Check collision with enemies
     enemies.forEach(enemy => {
-        let newX = Math.round((enemy.x + enemy.speedX) * 100) / 100;
-        let newY = Math.round((enemy.y + enemy.speedY) * 100) / 100;
-
-        // Check horizontal movement
-        if (!isTileCollidable(newX, enemy.y) &&
-            !isTileCollidable(newX + BASE_TILE_SIZE - 1, enemy.y) &&
-            !isTileCollidable(newX, enemy.y + BASE_TILE_SIZE - 1) &&
-            !isTileCollidable(newX + BASE_TILE_SIZE - 1, enemy.y + BASE_TILE_SIZE - 1) &&
-            !isTileCollidable(newX, enemy.y + BASE_TILE_SIZE / 2) &&
-            !isTileCollidable(newX + BASE_TILE_SIZE - 1, enemy.y + BASE_TILE_SIZE / 2)) {
-            enemy.x = newX;
-        } else {
-            enemy.speedX *= -1;
-            // Align to tile grid
-            enemy.x = Math.round(enemy.x / BASE_TILE_SIZE) * BASE_TILE_SIZE;
-        }
-
-        // Check vertical movement
-        if (!isTileCollidable(enemy.x, newY) &&
-            !isTileCollidable(enemy.x + BASE_TILE_SIZE - 1, newY) &&
-            !isTileCollidable(enemy.x, newY + BASE_TILE_SIZE - 1) &&
-            !isTileCollidable(enemy.x + BASE_TILE_SIZE - 1, newY + BASE_TILE_SIZE - 1) &&
-            !isTileCollidable(enemy.x + BASE_TILE_SIZE / 2, newY) &&
-            !isTileCollidable(enemy.x + BASE_TILE_SIZE / 2, newY + BASE_TILE_SIZE - 1)) {
-            enemy.y = newY;
-        } else {
-            enemy.speedY *= -1;
-            // Align to tile grid
-            enemy.y = Math.round(enemy.y / BASE_TILE_SIZE) * BASE_TILE_SIZE;
-        }
-
-        // Check collision with player
         if (checkCollision(player, enemy)) {
             // Reset player position
             player.x = BASE_TILE_SIZE * 2;
@@ -461,17 +387,6 @@ function update(deltaTime) {
             player.coins = 0;
         }
     });
-
-    // Update camera to follow player
-    const viewportWidth = canvas.width / ZOOM_LEVEL;
-    const viewportHeight = canvas.height / ZOOM_LEVEL;
-    
-    gameState.cameraX = player.x - viewportWidth / 2 + player.width / 2;
-    gameState.cameraY = player.y - viewportHeight / 2 + player.height / 2;
-
-    // Camera bounds
-    gameState.cameraX = Math.max(0, Math.min(gameState.cameraX, gameWidth - viewportWidth));
-    gameState.cameraY = Math.max(0, Math.min(gameState.cameraY, gameHeight - viewportHeight));
 }
 
 // Main game loop
@@ -506,4 +421,218 @@ async function startGame() {
 }
 
 // Initialize the game
-startGame(); 
+startGame();
+
+// Add event listeners for mouse
+canvas.addEventListener('mousemove', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const offsetX = (canvas.width - gameWidth * ZOOM_LEVEL) / 2;
+    const offsetY = (canvas.height - gameHeight * ZOOM_LEVEL) / 2;
+    
+    // Adjust mouse coordinates to account for viewport centering and zoom
+    gameState.mouseX = ((e.clientX - rect.left - offsetX) / ZOOM_LEVEL) + gameState.cameraX;
+    gameState.mouseY = ((e.clientY - rect.top - offsetY) / ZOOM_LEVEL) + gameState.cameraY;
+    
+    // Calculate hovered tile
+    const tileX = Math.floor(gameState.mouseX / BASE_TILE_SIZE);
+    const tileY = Math.floor(gameState.mouseY / BASE_TILE_SIZE);
+    
+    if (tileX !== gameState.hoveredTile.x || tileY !== gameState.hoveredTile.y) {
+        gameState.hoveredTile = { x: tileX, y: tileY };
+        // Calculate path to hovered tile
+        if (gameState.currentTurn === 'player') {
+            const playerTileX = Math.floor(player.x / BASE_TILE_SIZE);
+            const playerTileY = Math.floor(player.y / BASE_TILE_SIZE);
+            gameState.currentPath = findPath(
+                playerTileX, playerTileY,
+                tileX, tileY,
+                (x, y) => !isTileCollidable(x * BASE_TILE_SIZE, y * BASE_TILE_SIZE)
+            );
+        }
+    }
+});
+
+// Add combat functions
+function attack(attacker, defender) {
+    defender.health = Math.max(0, defender.health - attacker.damage);
+    if (defender.health <= 0 && defender !== player) {
+        defender.isActive = false;
+    }
+}
+
+function isAdjacent(entity1, entity2) {
+    const tile1X = Math.floor(entity1.x / BASE_TILE_SIZE);
+    const tile1Y = Math.floor(entity1.y / BASE_TILE_SIZE);
+    const tile2X = Math.floor(entity2.x / BASE_TILE_SIZE);
+    const tile2Y = Math.floor(entity2.y / BASE_TILE_SIZE);
+    
+    return Math.abs(tile1X - tile2X) + Math.abs(tile1Y - tile2Y) === 1;
+}
+
+// Modify the click handler to include combat
+canvas.addEventListener('click', (e) => {
+    if (gameState.currentTurn !== 'player' || !gameState.currentPath) return;
+    
+    const rect = canvas.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const clickY = e.clientY - rect.top;
+
+    // Check if skip button was clicked
+    if (gameState.skipButton &&
+        clickX >= gameState.skipButton.x &&
+        clickX <= gameState.skipButton.x + gameState.skipButton.width &&
+        clickY >= gameState.skipButton.y &&
+        clickY <= gameState.skipButton.y + gameState.skipButton.height) {
+        // Skip turn
+        gameState.currentPath = null;
+        gameState.hoveredTile = { x: -1, y: -1 };
+        endPlayerTurn();
+        return;
+    }
+    
+    // Check if we're trying to attack an enemy
+    const clickedTileX = gameState.hoveredTile.x;
+    const clickedTileY = gameState.hoveredTile.y;
+    
+    const targetEnemy = enemies.find(enemy => 
+        enemy.isActive &&
+        Math.floor(enemy.x / BASE_TILE_SIZE) === clickedTileX &&
+        Math.floor(enemy.y / BASE_TILE_SIZE) === clickedTileY
+    );
+    
+    if (targetEnemy && isAdjacent(player, targetEnemy)) {
+        // Attack the enemy
+        attack(player, targetEnemy);
+        
+        // Reset path and hover highlight after attack
+        gameState.currentPath = null;
+        gameState.hoveredTile = { x: -1, y: -1 };
+        
+        // End turn immediately after attack
+        endPlayerTurn();
+        return;
+    }
+    
+    // Otherwise, try to move
+    if (isPathInRange(gameState.currentPath, player.movePoints)) {
+        // Move player along path
+        const finalPos = gameState.currentPath[gameState.currentPath.length - 1];
+        player.x = finalPos.x * BASE_TILE_SIZE;
+        player.y = finalPos.y * BASE_TILE_SIZE;
+        
+        // Reset path and hover highlight after movement
+        gameState.currentPath = null;
+        gameState.hoveredTile = { x: -1, y: -1 };
+        
+        // End turn immediately after movement
+        endPlayerTurn();
+    }
+});
+
+function processEnemyTurn() {
+    // Process each enemy's turn
+    enemies.forEach(enemy => {
+        if (!enemy.isActive) return; // Skip dead enemies
+        
+        // Calculate path to player
+        const enemyTileX = Math.floor(enemy.x / BASE_TILE_SIZE);
+        const enemyTileY = Math.floor(enemy.y / BASE_TILE_SIZE);
+        const playerTileX = Math.floor(player.x / BASE_TILE_SIZE);
+        const playerTileY = Math.floor(player.y / BASE_TILE_SIZE);
+        
+        const pathToPlayer = findPath(
+            enemyTileX, enemyTileY,
+            playerTileX, playerTileY,
+            (x, y) => !isTileCollidable(x * BASE_TILE_SIZE, y * BASE_TILE_SIZE)
+        );
+        
+        if (!pathToPlayer) return; // No path to player
+        
+        // If adjacent to player, attack
+        if (isAdjacent(enemy, player)) {
+            attack(enemy, player);
+            if (player.health <= 0) {
+                // Game over logic here
+                player.x = BASE_TILE_SIZE * 2;
+                player.y = BASE_TILE_SIZE * 2;
+                player.health = player.maxHealth;
+                player.coins = 0;
+            }
+            return;
+        }
+        
+        // Otherwise, move towards player
+        if (pathToPlayer.length > 1) { // First point is current position
+            const moveDistance = Math.min(enemy.movePoints, pathToPlayer.length - 1);
+            const newPos = pathToPlayer[moveDistance];
+            enemy.x = newPos.x * BASE_TILE_SIZE;
+            enemy.y = newPos.y * BASE_TILE_SIZE;
+        }
+    });
+    
+    // End enemy turn
+    gameState.currentTurn = 'player';
+    player.movePoints = 5; // Reset player move points
+}
+
+function endPlayerTurn() {
+    gameState.currentTurn = 'enemies';
+    setTimeout(() => {
+        processEnemyTurn();
+    }, 500); // Add a small delay before enemy turn
+}
+
+// Draw entities
+function drawEntities() {
+    // Draw player
+    if (entityImages.player && entityImages.player.complete) {
+        ctx.drawImage(
+            entityImages.player,
+            player.x,
+            player.y,
+            player.width,
+            player.height
+        );
+    }
+    
+    // Draw enemies
+    enemies.forEach(enemy => {
+        if (!enemy.isActive) return; // Don't draw dead enemies
+        if (entityImages.enemy && entityImages.enemy.complete) {
+            ctx.drawImage(
+                entityImages.enemy,
+                enemy.x,
+                enemy.y,
+                enemy.width,
+                enemy.height
+            );
+        }
+    });
+}
+
+// Add click handler for skip button
+canvas.addEventListener('click', (e) => {
+    if (gameState.currentTurn !== 'player') return;
+
+    const rect = canvas.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const clickY = e.clientY - rect.top;
+
+    // Check if skip button was clicked
+    if (gameState.skipButton &&
+        clickX >= gameState.skipButton.x &&
+        clickX <= gameState.skipButton.x + gameState.skipButton.width &&
+        clickY >= gameState.skipButton.y &&
+        clickY <= gameState.skipButton.y + gameState.skipButton.height) {
+        // Skip turn
+        gameState.currentPath = null;
+        gameState.hoveredTile = { x: -1, y: -1 };
+        endPlayerTurn();
+        return;
+    }
+
+    // Rest of the click handler for movement and combat
+    const clickedTileX = gameState.hoveredTile.x;
+    const clickedTileY = gameState.hoveredTile.y;
+    // ... existing code ...
+}); 
