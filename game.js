@@ -9,8 +9,9 @@ const ZOOM_LEVEL = 4;
 
 // Make canvas fill the screen
 function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    // Round to even numbers by flooring to nearest even number
+    canvas.width = Math.floor(window.innerWidth / 2) * 2;
+    canvas.height = Math.floor(window.innerHeight / 2) * 2;
     
     // Set default rendering settings
     ctx.imageSmoothingEnabled = false;
@@ -118,7 +119,6 @@ const player = {
 };
 
 // Game objects (enemies)
-const BASE_ENEMY_SPEED = 1;
 const enemies = [
     { 
         x: TILE_SIZE * 10, 
@@ -284,10 +284,6 @@ function draw() {
     // Clear the canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Center the viewport
-    const viewportWidth = canvas.width / ZOOM_LEVEL;
-    const viewportHeight = canvas.height / ZOOM_LEVEL;
-    
     // Calculate the offset to center the game area
     const offsetX = (canvas.width - gameWidth * ZOOM_LEVEL) / 2;
     const offsetY = (canvas.height - gameHeight * ZOOM_LEVEL) / 2;
