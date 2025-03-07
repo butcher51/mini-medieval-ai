@@ -445,10 +445,28 @@ canvas.addEventListener('mousemove', (e) => {
         if (gameState.currentTurn === 'player') {
             const playerTileX = Math.floor(player.x / BASE_TILE_SIZE);
             const playerTileY = Math.floor(player.y / BASE_TILE_SIZE);
+            
+            // Create a collision checker that includes both map collisions and enemy positions
+            const isWalkable = (x, y) => {
+                // Check map collisions first
+                if (isTileCollidable(x * BASE_TILE_SIZE, y * BASE_TILE_SIZE)) {
+                    return false;
+                }
+                
+                // Check if any enemy occupies this tile
+                const isEnemyTile = enemies.some(enemy => 
+                    enemy.isActive && 
+                    Math.floor(enemy.x / BASE_TILE_SIZE) === x && 
+                    Math.floor(enemy.y / BASE_TILE_SIZE) === y
+                );
+                
+                return !isEnemyTile;
+            };
+            
             gameState.currentPath = findPath(
                 playerTileX, playerTileY,
                 tileX, tileY,
-                (x, y) => !isTileCollidable(x * BASE_TILE_SIZE, y * BASE_TILE_SIZE)
+                isWalkable
             );
         }
     }
@@ -486,13 +504,13 @@ async function moveCharacterAlongPath(character, path, baseTileSize) {
 
 // Modify the click handler to include combat
 canvas.addEventListener('click', async (e) => {
-    if (gameState.currentTurn !== 'player' || !gameState.currentPath || gameState.isMoving) return;
+    if (gameState.currentTurn !== 'player' || gameState.isMoving) return;
 
     const rect = canvas.getBoundingClientRect();
     const clickX = e.clientX - rect.left;
     const clickY = e.clientY - rect.top;
 
-    // Check if skip button was clicked
+    // Check if skip button was clicked (skip button is in screen space, not game space)
     if (gameState.skipButton &&
         clickX >= gameState.skipButton.x &&
         clickX <= gameState.skipButton.x + gameState.skipButton.width &&
@@ -504,6 +522,9 @@ canvas.addEventListener('click', async (e) => {
         endPlayerTurn();
         return;
     }
+
+    // Don't process game world clicks if there's no path
+    if (!gameState.currentPath) return;
 
     // Check if we're trying to attack an enemy
     const clickedTileX = gameState.hoveredTile.x;
