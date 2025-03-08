@@ -1,5 +1,5 @@
 export class Character {
-    constructor(x, y, width, height, image, health, maxHealth, damage, movePoints) {
+    constructor({x, y, width, height, image, health, maxHealth, damage, movePoints, animationController}) {
         this.x = x;
         this.y = y;
         this.width = width;
@@ -10,9 +10,13 @@ export class Character {
         this.damage = damage;
         this.movePoints = movePoints;
         this.isActive = true;
+        this.animationController = animationController;
     }
 
     draw(ctx, entityImages) {
+        if (this.animationController) {
+            this.animationController.draw(ctx, this.health <= 0 ? 'dead' : 'run', this.x, this.y);
+        } else
         if (entityImages[this.imageKey] && entityImages[this.imageKey].complete) {
             ctx.drawImage(
                 entityImages[this.imageKey],

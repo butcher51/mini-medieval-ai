@@ -1,7 +1,7 @@
 import { findPath, isPathInRange } from './astar.js';
-import { Player } from './classes/Player.js';
-import { Enemy } from './classes/Enemy.js';
-import { AnimationController } from './classes/AnimationController.js';
+import { Player } from './Player.js';
+import { Enemy } from './Enemy.js';
+import { AnimationController } from './AnimationController.js';
 import {
     ZOOM_LEVEL,
     BASE_TILE_SIZE,
