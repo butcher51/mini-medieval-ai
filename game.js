@@ -553,6 +553,8 @@ canvas.addEventListener('click', async (e) => {
 
     // Otherwise, try to move
     if (isPathInRange(gameState.currentPath, player.movePoints)) {
+        player.setState('run'); // Set player animation state to walking
+
         // Store the path before starting movement
         const movementPath = [...gameState.currentPath];
 
@@ -562,6 +564,8 @@ canvas.addEventListener('click', async (e) => {
 
         // Animate movement along path
         await moveCharacterAlongPath(player, movementPath, BASE_TILE_SIZE);
+
+        player.setState('idle'); // Set player animation state back to idle
 
         // End turn immediately after movement
         endPlayerTurn();
@@ -601,7 +605,9 @@ async function processEnemyTurn() {
         if (pathToPlayer.length > 1) { // First point is current position
             const moveDistance = Math.min(enemy.movePoints, pathToPlayer.length - 1);
             const path = pathToPlayer.slice(0, moveDistance + 1);
+            enemy.setState('run'); // Set enemy animation state to walking
             await moveCharacterAlongPath(enemy, path, BASE_TILE_SIZE);
+            enemy.setState('idle'); // Set enemy animation state back to idle
         }
     }
 

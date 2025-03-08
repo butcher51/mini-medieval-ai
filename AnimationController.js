@@ -33,6 +33,11 @@ export class AnimationController {
         }
     }
 
+    reset() {
+        this.#currentFrame = 0;
+        this.#lastFrameTime = 0;
+    }
+
     draw(ctx, state, posX, posY) {
         if (!AnimationController.animationData || !AnimationController.spriteSheet) {
             console.error('Animation data or sprite sheet not loaded');

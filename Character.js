@@ -1,4 +1,7 @@
 export class Character {
+
+    #state = 'idle';
+
     constructor({x, y, width, height, image, health, maxHealth, damage, movePoints, animationController}) {
         this.x = x;
         this.y = y;
@@ -13,9 +16,16 @@ export class Character {
         this.animationController = animationController;
     }
 
+    setState(newState) {
+        this.#state = newState;
+        this.animationController.reset();
+    }
+
     draw(ctx, entityImages) {
         if (this.animationController) {
-            this.animationController.draw(ctx, this.health <= 0 ? 'dead' : 'run', this.x, this.y);
+            // ctx.fillStyle = '#000000';
+            // ctx.fillRect(this.x, this.y, this.width, this.height);
+            this.animationController.draw(ctx, this.#state, this.x, this.y);
         } else
         if (entityImages[this.imageKey] && entityImages[this.imageKey].complete) {
             ctx.drawImage(

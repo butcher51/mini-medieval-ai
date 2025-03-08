@@ -5,6 +5,7 @@ import {
   ENEMY_DAMAGE,
   ENEMY_MOVE_POINTS,
 } from "./constants.js";
+import { AnimationController } from "./AnimationController.js";
 
 export class Enemy extends Character {
   constructor(x, y, width, height) {
@@ -18,6 +19,7 @@ export class Enemy extends Character {
       maxHealth: ENEMY_MAX_HEALTH,
       damage: ENEMY_DAMAGE,
       movePoints: ENEMY_MOVE_POINTS,
+      animationController: new AnimationController("enemy"),
     });
     this.imageKey = "enemy";
   }
