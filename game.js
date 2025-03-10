@@ -430,15 +430,15 @@ function update(deltaTime) {
           player.y + player.height / 2
      );
 
-     // Check collision with enemies
-     enemies.forEach((enemy) => {
-          if (checkCollision(player, enemy)) {
-               // Reset player position
-               player.x = BASE_TILE_SIZE * 2;
-               player.y = BASE_TILE_SIZE * 2;
-               player.coins = 0;
-          }
-     });
+     // // Check collision with enemies
+     // enemies.forEach((enemy) => {
+     //      if (checkCollision(player, enemy)) {
+     //           // Reset player position
+     //           player.x = BASE_TILE_SIZE * 2;
+     //           player.y = BASE_TILE_SIZE * 2;
+     //           player.coins = 0;
+     //      }
+     // });
 }
 
 // Main game loop
@@ -502,29 +502,6 @@ canvas.addEventListener("mousemove", (e) => {
                const playerTileX = Math.floor(player.x / BASE_TILE_SIZE);
                const playerTileY = Math.floor(player.y / BASE_TILE_SIZE);
 
-               // Create a collision checker that includes both map collisions and enemy positions
-               const isWalkable = (x, y) => {
-                    // Check map collisions first
-                    if (
-                         isTileCollidable(
-                              x * BASE_TILE_SIZE,
-                              y * BASE_TILE_SIZE
-                         )
-                    ) {
-                         return false;
-                    }
-
-                    // Check if any enemy occupies this tile
-                    const isEnemyTile = enemies.some(
-                         (enemy) =>
-                              enemy.isActive &&
-                              Math.floor(enemy.x / BASE_TILE_SIZE) === x &&
-                              Math.floor(enemy.y / BASE_TILE_SIZE) === y
-                    );
-
-                    return !isEnemyTile;
-               };
-
                gameState.currentPath = findPath(
                     playerTileX,
                     playerTileY,
@@ -557,6 +534,10 @@ async function moveCharacterAlongPath(character, path, baseTileSize) {
           const nextPos = path[i];
           character.x = nextPos.x * baseTileSize;
           character.y = nextPos.y * baseTileSize;
+          if (character.isAdjacent(player, baseTileSize)) {
+               // Stop movement if adjacent to player
+               break;
+          }
           await new Promise((resolve) =>
                setTimeout(resolve, MOVEMENT_STEP_DELAY)
           );
@@ -655,8 +636,7 @@ async function processEnemyTurn() {
                enemyTileY,
                playerTileX,
                playerTileY,
-               (x, y) =>
-                    !isTileCollidable(x * BASE_TILE_SIZE, y * BASE_TILE_SIZE)
+               isWalkable
           );
 
           if (!pathToPlayer) continue; // No path to player
@@ -679,6 +659,7 @@ async function processEnemyTurn() {
                     pathToPlayer.length - 1
                );
                const path = pathToPlayer.slice(0, moveDistance + 1);
+
                enemy.setState("run"); // Set enemy animation state to walking
                await moveCharacterAlongPath(enemy, path, BASE_TILE_SIZE);
                enemy.setState("idle"); // Set enemy animation state back to idle
@@ -695,4 +676,26 @@ function endPlayerTurn() {
      setTimeout(() => {
           processEnemyTurn();
      }, 500); // Add a small delay before enemy turn
+}
+
+function isWalkable(x, y) {
+     // Check map collisions first
+     if (
+          isTileCollidable(
+               x * BASE_TILE_SIZE,
+               y * BASE_TILE_SIZE
+          )
+     ) {
+          return false;
+     }
+
+     // Check if any enemy occupies this tile
+     const isEnemyTile = enemies.some(
+          (enemy) =>
+               enemy.isActive &&
+               Math.floor(enemy.x / BASE_TILE_SIZE) === x &&
+               Math.floor(enemy.y / BASE_TILE_SIZE) === y
+     );
+     
+     return !isEnemyTile;
 }

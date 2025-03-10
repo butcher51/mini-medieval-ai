@@ -3,7 +3,7 @@ export class AnimationController {
     #animId;
     #currentFrame = 0;
     #lastFrameTime = 0;
-    #frameDelay = 200; // 200ms delay between frames
+    #frameDelay = 150; // 200ms delay between frames
 
     constructor(animId) {
         this.#animId = animId;

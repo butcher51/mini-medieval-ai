@@ -38,7 +38,9 @@ export class Character {
   }
 
   attack(defender) {
+    console.log('attach', defender);
     defender.health = Math.max(0, defender.health - this.damage);
+    console.log('attach', defender);
     if (defender.health <= 0 && defender !== this) {
       defender.isActive = false;
     }
@@ -49,7 +51,6 @@ export class Character {
     const tile1Y = Math.floor(this.y / baseTileSize);
     const tile2X = Math.floor(entity.x / baseTileSize);
     const tile2Y = Math.floor(entity.y / baseTileSize);
-
     return Math.abs(tile1X - tile2X) + Math.abs(tile1Y - tile2Y) === 1;
   }
 }
