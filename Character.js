@@ -2,6 +2,7 @@ export class Character {
   #state = "idle";
 
   constructor({
+    id,
     x,
     y,
     width,
@@ -12,6 +13,7 @@ export class Character {
     movePoints,
     animationController,
   }) {
+    this.id = id;
     this.x = x;
     this.y = y;
     this.width = width;
@@ -31,16 +33,12 @@ export class Character {
 
   draw(ctx) {
     if (this.animationController) {
-      // ctx.fillStyle = '#000000';
-      // ctx.fillRect(this.x, this.y, this.width, this.height);
       this.animationController.draw(ctx, this.#state, this.x, this.y);
     }
   }
 
-  attack(defender) {
-    console.log('attach', defender);
-    defender.health = Math.max(0, defender.health - this.damage);
-    console.log('attach', defender);
+  attack(defender) {    
+    defender.health = Math.max(0, defender.health - this.damage);  
     if (defender.health <= 0 && defender !== this) {
       defender.isActive = false;
     }

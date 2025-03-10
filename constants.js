@@ -25,6 +25,6 @@ export const ENEMY_MOVE_POINTS = 3;
 
 // Enemy positions
 export const ENEMY_POSITIONS = [
-    { x: TILE_SIZE * 10, y: TILE_SIZE * 7 },
-    { x: TILE_SIZE * 15, y: TILE_SIZE * 3 }
+    { id: 'géza', x: TILE_SIZE * 10, y: TILE_SIZE * 7 },
+    { id: 'feri', x: TILE_SIZE * 15, y: TILE_SIZE * 3 }
 ]; 

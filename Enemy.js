@@ -8,8 +8,9 @@ import {
 import { AnimationController } from "./AnimationController.js";
 
 export class Enemy extends Character {
-  constructor(x, y, width, height) {
+  constructor(id, x, y, width, height) {
     super({
+      id,
       x,
       y,
       width,

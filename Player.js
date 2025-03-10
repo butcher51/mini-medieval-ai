@@ -10,8 +10,9 @@ import {
 } from "./constants.js";
 
 export class Player extends Character {
-  constructor(x, y, width, height) {
+  constructor(id, x, y, width, height) {
     super({
+      id,
       x,
       y,
       width,
@@ -36,6 +37,7 @@ export class Player extends Character {
   }
 
   reset() {
+    this.setState("idle");
     this.x = PLAYER_START_X;
     this.y = PLAYER_START_Y;
     this.coins = 0;
