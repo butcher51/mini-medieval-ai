@@ -23,7 +23,7 @@ export class AnimationController {
             await new Promise((resolve, reject) => {
                 AnimationController.spriteSheet.onload = resolve;
                 AnimationController.spriteSheet.onerror = reject;
-                AnimationController.spriteSheet.src = 'assets/Units.png';
+                AnimationController.spriteSheet.src = 'assets/units.png';
             });
 
             return true;
