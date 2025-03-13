@@ -34,6 +34,7 @@ export class Player extends Character {
     this.width = tileSize;
     this.height = tileSize;
     this.movePoints = PLAYER_MOVE_POINTS;
+    // this.setState("attack");
   }
 
   reset() {

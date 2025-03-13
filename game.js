@@ -488,7 +488,7 @@ canvas.addEventListener("click", async (e) => {
 
      if (targetEnemy && player.isAdjacent(targetEnemy, BASE_TILE_SIZE)) {
           // Attack the enemy
-          attack({ attacker: player, defender: targetEnemy });
+          await attack({ attacker: player, defender: targetEnemy });
 
           // Reset path and hover highlight after attack
           gameState.currentPath = null;
@@ -518,6 +518,11 @@ canvas.addEventListener("click", async (e) => {
           // Animate movement along path
           await moveCharacterAlongPath(player, movementPath, BASE_TILE_SIZE);
 
+          if (targetEnemy) {
+               // Attack the enemy after movement
+               await attack({ attacker: player, defender: targetEnemy });
+          }
+
           player.setState("idle"); // Set player animation state back to idle
 
           // End turn immediately after movement
@@ -542,7 +547,7 @@ async function processEnemyTurn() {
 
           // If adjacent to player, attack
           if (enemy.isAdjacent(player, BASE_TILE_SIZE)) {
-               attack({ attacker: enemy, defender: player });
+               await attack({ attacker: enemy, defender: player });
                continue;
           }
 
@@ -562,7 +567,7 @@ async function processEnemyTurn() {
                await new Promise((resolve) => setTimeout(resolve, 500)); // Delay before attacking
 
                if (enemy.isAdjacent(player, BASE_TILE_SIZE)) {
-                    attack({ attacker: enemy, defender: player });
+                    await attack({ attacker: enemy, defender: player });
                     continue;
                }
           }
@@ -577,7 +582,7 @@ async function processEnemyTurn() {
 async function attack({ attacker, defender }) {
      attacker.setState("attack"); // Set enemy animation state to attacking
      defender.setState("hit"); // Set player animation state to hit
-     await new Promise((resolve) => setTimeout(resolve, 500)); // Delay for attack animation
+     await new Promise((resolve) => setTimeout(resolve, 1000)); // Delay for attack animation
      attacker.attack(defender);
      attacker.setState("idle"); // Set enemy animation state back to idle
      defender.setState("idle"); // Set player animation state back to idle
