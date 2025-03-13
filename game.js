@@ -117,7 +117,7 @@ const gameState = {
      cameraY: 0,
      mouseX: 0,
      mouseY: 0,
-     hoveredTile: { x: 0, y: 0 },
+     hoveredTile: { x: 0, y: 0, attack: false },
      currentPath: null,
      currentTurn: "player", // 'player' or 'enemies'
      isMoving: false, // Track if any character is currently moving
@@ -287,6 +287,10 @@ function draw() {
                ) {
                     ctx.strokeStyle = isPathInRange(gameState.currentPath, player.movePoints) ? "rgba(0, 255, 0, 0.5)" : "rgba(255, 0, 0, 0.5)";
                     ctx.strokeRect(hoveredTileX, hoveredTileY, BASE_TILE_SIZE, BASE_TILE_SIZE);
+                    if (gameState.hoveredTile.attack) {
+                         ctx.fillStyle = "rgba(255, 0, 0, 0.5)";
+                         ctx.fillRect(hoveredTileX, hoveredTileY, BASE_TILE_SIZE, BASE_TILE_SIZE);
+                    }
                     // ctx.drawImage(
                     //      uiImage,
                     //      hoveredTileX,
@@ -394,26 +398,26 @@ startGame();
 
 // Add event listeners for mouse
 canvas.addEventListener("mousemove", (e) => {
-     const rect = canvas.getBoundingClientRect();
-     const offsetX = (canvas.width - gameWidth * ZOOM_LEVEL) / 2;
-     const offsetY = (canvas.height - gameHeight * ZOOM_LEVEL) / 2;
+     if (gameState.currentTurn === "player" && player.isActive) {
+          const rect = canvas.getBoundingClientRect();
+          const offsetX = (canvas.width - gameWidth * ZOOM_LEVEL) / 2;
+          const offsetY = (canvas.height - gameHeight * ZOOM_LEVEL) / 2;
 
-     // Adjust mouse coordinates to account for viewport centering and zoom
-     gameState.mouseX = (e.clientX - rect.left - offsetX) / ZOOM_LEVEL + gameState.cameraX;
-     gameState.mouseY = (e.clientY - rect.top - offsetY) / ZOOM_LEVEL + gameState.cameraY;
+          // Adjust mouse coordinates to account for viewport centering and zoom
+          gameState.mouseX = (e.clientX - rect.left - offsetX) / ZOOM_LEVEL + gameState.cameraX;
+          gameState.mouseY = (e.clientY - rect.top - offsetY) / ZOOM_LEVEL + gameState.cameraY;
 
-     // Calculate hovered tile
-     const tileX = Math.floor(gameState.mouseX / BASE_TILE_SIZE);
-     const tileY = Math.floor(gameState.mouseY / BASE_TILE_SIZE);
+          // Calculate hovered tile
+          const tileX = Math.floor(gameState.mouseX / BASE_TILE_SIZE);
+          const tileY = Math.floor(gameState.mouseY / BASE_TILE_SIZE);
 
-     if (tileX !== gameState.hoveredTile.x || tileY !== gameState.hoveredTile.y) {
-          gameState.hoveredTile = { x: tileX, y: tileY };
-          // Calculate path to hovered tile
-          if (gameState.currentTurn === "player") {
+          if (tileX !== gameState.hoveredTile.x || tileY !== gameState.hoveredTile.y) {
+               const attack = isEnemyTile(tileX, tileY);
+               gameState.hoveredTile = { x: tileX, y: tileY, attack };
+               // Calculate path to hovered tile
                const playerTileX = Math.floor(player.x / BASE_TILE_SIZE);
                const playerTileY = Math.floor(player.y / BASE_TILE_SIZE);
-
-               gameState.currentPath = findPath(playerTileX, playerTileY, tileX, tileY, isWalkable);
+               gameState.currentPath = findPath(playerTileX, playerTileY, tileX, tileY, attack ? isAttackWalkable : isWalkable);
           }
      }
 });
@@ -425,7 +429,7 @@ function drawEntities() {
 
      // Draw enemies
      enemies.forEach((enemy) => {
-          if (!enemy.isActive) return; // Don't draw dead enemies
+          //if (!enemy.isActive) return; // Don't draw dead enemies
           enemy.draw(ctx);
      });
 }
@@ -439,10 +443,16 @@ async function moveCharacterAlongPath(character, path, baseTileSize) {
           const nextPos = path[i];
           character.x = nextPos.x * baseTileSize;
           character.y = nextPos.y * baseTileSize;
-          if (character.isAdjacent(player, baseTileSize)) {
-               // Stop movement if adjacent to player
-               break;
-          }
+          // BIZTOS?!
+          //   if (character.isAdjacent(player, baseTileSize)) {
+          //        // Stop movement if adjacent to player
+          //        break move;
+          //   }
+          //   for (let j = 0; j < enemies.length; j++) {
+          //        if (enemies[j].isActive && enemies[j].isAdjacent(player, baseTileSize)) {
+          //             break move;
+          //        }
+          //   }
           await new Promise((resolve) => setTimeout(resolve, MOVEMENT_STEP_DELAY));
      }
 
@@ -488,7 +498,7 @@ canvas.addEventListener("click", async (e) => {
 
      if (targetEnemy && player.isAdjacent(targetEnemy, BASE_TILE_SIZE)) {
           // Attack the enemy
-          player.attack(targetEnemy);
+          attack({ attacker: player, defender: targetEnemy });
 
           // Reset path and hover highlight after attack
           gameState.currentPath = null;
@@ -497,6 +507,11 @@ canvas.addEventListener("click", async (e) => {
           // End turn immediately after attack
           endPlayerTurn();
           return;
+     }
+
+     // Check if we're trying to move to an enemy tile
+     if (targetEnemy) {
+        gameState.currentPath.pop();
      }
 
      // Otherwise, try to move
@@ -546,9 +561,12 @@ async function processEnemyTurn() {
                // First point is current position
                const moveDistance = Math.min(enemy.movePoints, pathToPlayer.length - 1);
                const path = pathToPlayer.slice(0, moveDistance + 1);
+               const targetPos = path[path.length - 1];
+
+               isPlayerTile(targetPos.x, targetPos.y) ? path.pop() : null;
 
                enemy.setState("run"); // Set enemy animation state to walking
-               await moveCharacterAlongPath(enemy, path, BASE_TILE_SIZE);               
+               await moveCharacterAlongPath(enemy, path, BASE_TILE_SIZE);
                enemy.setState("idle"); // Set enemy animation state back to idle
 
                await new Promise((resolve) => setTimeout(resolve, 500)); // Delay before attacking
@@ -594,7 +612,17 @@ function isWalkable(x, y) {
      }
 
      // Check if any enemy occupies this tile
-     const isEnemyTile = enemies.some((enemy) => enemy.isActive && Math.floor(enemy.x / BASE_TILE_SIZE) === x && Math.floor(enemy.y / BASE_TILE_SIZE) === y);
+     return !isEnemyTile(x, y);
+}
 
-     return !isEnemyTile;
+function isAttackWalkable(x, y) {
+     return !isTileCollidable(x * BASE_TILE_SIZE, y * BASE_TILE_SIZE);
+}
+
+function isEnemyTile(x, y) {
+     return enemies.some((enemy) => enemy.isActive && Math.floor(enemy.x / BASE_TILE_SIZE) === x && Math.floor(enemy.y / BASE_TILE_SIZE) === y);
+}
+
+function isPlayerTile(x, y) {
+     return Math.floor(player.x / BASE_TILE_SIZE) === x && Math.floor(player.y / BASE_TILE_SIZE) === y;
 }

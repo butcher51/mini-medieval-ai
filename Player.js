@@ -42,5 +42,6 @@ export class Player extends Character {
     this.y = PLAYER_START_Y;
     this.coins = 0;
     this.health = this.maxHealth;
+    this.isActive = true;
   }
 }

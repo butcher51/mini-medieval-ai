@@ -41,6 +41,7 @@ export class Character {
     defender.health = Math.max(0, defender.health - this.damage);  
     if (defender.health <= 0 && defender !== this) {
       defender.isActive = false;
+      this.setState("dead");
     }
   }
 
