@@ -443,16 +443,6 @@ async function moveCharacterAlongPath(character, path, baseTileSize) {
           const nextPos = path[i];
           character.x = nextPos.x * baseTileSize;
           character.y = nextPos.y * baseTileSize;
-          // BIZTOS?!
-          //   if (character.isAdjacent(player, baseTileSize)) {
-          //        // Stop movement if adjacent to player
-          //        break move;
-          //   }
-          //   for (let j = 0; j < enemies.length; j++) {
-          //        if (enemies[j].isActive && enemies[j].isAdjacent(player, baseTileSize)) {
-          //             break move;
-          //        }
-          //   }
           await new Promise((resolve) => setTimeout(resolve, MOVEMENT_STEP_DELAY));
      }
 
@@ -576,6 +566,7 @@ async function processEnemyTurn() {
                     continue;
                }
           }
+          await new Promise((resolve) => setTimeout(resolve, 500)); // Delay before next enemy turn
      }
 
      // End enemy turn
