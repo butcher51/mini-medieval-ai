@@ -35,6 +35,8 @@ let gameHeight = 0;
 
 // Game state
 let gameMap = null;
+let gameMapAnimations = null;
+let gameMapAnimationIndexes = null;
 let tilesetImage = null;
 let uiImage = null;
 let tilesetData = null;
@@ -55,6 +57,9 @@ async function loadMap() {
      try {
           const response = await fetch("assets/maps/test-map.json");
           gameMap = await response.json();
+
+          const animationsResponse = await fetch("assets/maps/test-map-animations.json");
+          gameMapAnimations = await animationsResponse.json();
 
           // Set map dimensions
           MAP_WIDTH = gameMap.width;
@@ -178,6 +183,13 @@ function drawMapLayers() {
           ctx.fillRect(0, 0, gameWidth, gameHeight);
      }
 
+     if (!gameMapAnimationIndexes) {
+          gameMapAnimationIndexes = Array.from({ length: MAP_HEIGHT }, () => Array(MAP_WIDTH).fill(null));
+     }
+
+     let animationIndex, tileIndex, animation;
+     const now = Math.floor(Date.now() / 400);
+
      // Draw each visible layer
      gameMap.layers.forEach((layer) => {
           if (layer.class === "collision") return; // Skip collision layer
@@ -185,8 +197,22 @@ function drawMapLayers() {
 
           for (let y = 0; y < layer.height; y++) {
                for (let x = 0; x < layer.width; x++) {
-                    const tileIndex = layer.data[y * layer.width + x];
+                    tileIndex = layer.data[y * layer.width + x];
                     if (tileIndex === 0) continue; // Skip empty tiles
+
+                    animation = gameMapAnimations["" + tileIndex];
+                    if (animation) {
+                         animationIndex = gameMapAnimationIndexes[y][x];
+                         if (animationIndex !== null) {
+                              tileIndex = animationIndex.frames[animationIndex.currentFrame + (now % animationIndex.length)];
+                         } else {
+                              gameMapAnimationIndexes[y][x] = {
+                                   length: animation.length,
+                                   frames: animation,
+                                   currentFrame: 0,
+                              };
+                         }
+                    }
 
                     const pos = getTilePosition(tileIndex);
                     if (!pos) continue;
@@ -198,6 +224,7 @@ function drawMapLayers() {
                }
           }
      });
+     console.log(gameMapAnimationIndexes);
 }
 
 // Draw path visualization
@@ -501,7 +528,7 @@ canvas.addEventListener("click", async (e) => {
 
      // Check if we're trying to move to an enemy tile
      if (targetEnemy) {
-        gameState.currentPath.pop();
+          gameState.currentPath.pop();
      }
 
      // Otherwise, try to move
