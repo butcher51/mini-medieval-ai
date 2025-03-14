@@ -188,7 +188,7 @@ function drawMapLayers() {
      }
 
      let animationIndex, tileIndex, animation;
-     const now = Math.floor(Date.now() / 500);
+     const now = Math.floor(Date.now() / 600);
 
      // Draw each visible layer
      gameMap.layers.forEach((layer) => {
@@ -224,7 +224,6 @@ function drawMapLayers() {
                }
           }
      });
-     console.log(gameMapAnimationIndexes);
 }
 
 // Draw path visualization
@@ -318,17 +317,6 @@ function draw() {
                          ctx.fillStyle = "rgba(255, 0, 0, 0.5)";
                          ctx.fillRect(hoveredTileX, hoveredTileY, BASE_TILE_SIZE, BASE_TILE_SIZE);
                     }
-                    // ctx.drawImage(
-                    //      uiImage,
-                    //      hoveredTileX,
-                    //      hoveredTileY,
-                    //      BASE_TILE_SIZE,
-                    //      BASE_TILE_SIZE,
-                    //      hoveredTileX,
-                    //      hoveredTileY,
-                    //      BASE_TILE_SIZE,
-                    //      BASE_TILE_SIZE
-                    // );
                }
           }
      }
