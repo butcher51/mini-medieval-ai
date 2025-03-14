@@ -188,7 +188,7 @@ function drawMapLayers() {
      }
 
      let animationIndex, tileIndex, animation;
-     const now = Math.floor(Date.now() / 400);
+     const now = Math.floor(Date.now() / 500);
 
      // Draw each visible layer
      gameMap.layers.forEach((layer) => {
