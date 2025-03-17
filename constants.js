@@ -1,5 +1,5 @@
 // Canvas and display settings
-export const ZOOM_LEVEL = 4;
+export const ZOOM_LEVEL = 2;
 
 // Map configuration
 export const BASE_TILE_SIZE = 8; // Tiled uses 8x8 tiles
