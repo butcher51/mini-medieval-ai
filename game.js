@@ -3,6 +3,7 @@ import { Player } from "./Player.js";
 import { Enemy } from "./Enemy.js";
 import { AnimationController } from "./AnimationController.js";
 import { ZOOM_LEVEL, BASE_TILE_SIZE, TILE_SIZE, PLAYER_MOVE_POINTS, ENEMY_POSITIONS, MOVEMENT_STEP_DELAY } from "./constants.js";
+import { createGameState } from "./gameState.js";
 
 // Get the canvas context
 const canvas = document.getElementById("gameCanvas");
@@ -71,6 +72,9 @@ async function loadMap() {
 
           // Find collision layer
           collisionLayer = gameMap.layers.find((layer) => layer.class === "collision");
+          if (!collisionLayer) {
+               throw new Error("No collision layer found in map data");
+          }
 
           // Load tileset
           const tilesetSource = gameMap.tilesets[0].source;
@@ -87,12 +91,16 @@ async function loadMap() {
                tilesetImage.onerror = reject;
                tilesetImage.src = `assets/${tilesetName}.png`;
           });
-
-          // Initialize player
-          player.initialize(TILE_SIZE);
      } catch (error) {
           console.error("Error loading map:", error);
      }
+}
+
+function intializeCharacters(charactersLayer) {
+     // Initialize player, TODO: this should come from the map data
+     player.initialize();
+
+     enemies = ENEMY_POSITIONS.map((pos) => new Enemy(pos.id, pos.x, pos.y, TILE_SIZE, TILE_SIZE));
 }
 
 // Calculate tile position in tileset
@@ -114,20 +122,10 @@ function getTilePosition(tileIndex) {
 const player = new Player("It's me", TILE_SIZE * 2, TILE_SIZE * 2, TILE_SIZE, TILE_SIZE);
 
 // Game objects (enemies)
-const enemies = ENEMY_POSITIONS.map((pos) => new Enemy(pos.id, pos.x, pos.y, TILE_SIZE, TILE_SIZE));
+let enemies = ENEMY_POSITIONS.map((pos) => new Enemy(pos.id, pos.x, pos.y, TILE_SIZE, TILE_SIZE));
 
 // Game state
-const gameState = {
-     cameraX: 0,
-     cameraY: 0,
-     mouseX: 0,
-     mouseY: 0,
-     hoveredTile: { x: 0, y: 0, attack: false },
-     currentPath: null,
-     currentTurn: "player", // 'player' or 'enemies'
-     isMoving: false, // Track if any character is currently moving
-     activeMovementPath: null, // Store the path being followed during movement
-};
+let gameState = createGameState();
 
 function isTileCollidable(x, y) {
      if (!collisionLayer) return false;
@@ -402,9 +400,22 @@ async function startGame() {
           await AnimationController.loadAnimations();
           await loadUI();
           await loadMap();
+          await initialize();
           gameLoop();
      } catch (error) {
           console.error("Error starting game:", error);
+     }
+}
+
+async function initialize() {
+     gameState = createGameState();
+
+     // Find collision layer
+     const charactersLayer = gameMap.layers.find((layer) => layer.class === "characters");
+     if (charactersLayer) {
+          intializeCharacters(charactersLayer);
+     } else {
+          player.initialize();
      }
 }
 
@@ -595,6 +606,7 @@ async function processEnemyTurn() {
 }
 
 async function attack({ attacker, defender }) {
+     gameState.isMoving = true;
      attacker.setState("attack"); // Set enemy animation state to attacking
      defender.setState("hit"); // Set player animation state to hit
      await new Promise((resolve) => setTimeout(resolve, 1000)); // Delay for attack animation
@@ -607,6 +619,7 @@ async function attack({ attacker, defender }) {
           // Game over logic here
           defender.reset();
      }
+     gameState.isMoving = false;
 }
 
 function endPlayerTurn() {

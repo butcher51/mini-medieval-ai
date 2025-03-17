@@ -52,4 +52,8 @@ export class Character {
     const tile2Y = Math.floor(entity.y / baseTileSize);
     return Math.abs(tile1X - tile2X) + Math.abs(tile1Y - tile2Y) === 1;
   }
+
+  reset() {
+    
+  }
 }

@@ -7,6 +7,7 @@ import {
   PLAYER_MAX_HEALTH,
   PLAYER_DAMAGE,
   PLAYER_MOVE_POINTS,
+  TILE_SIZE
 } from "./constants.js";
 
 export class Player extends Character {
@@ -28,13 +29,12 @@ export class Player extends Character {
     this.imageKey = "player";
   }
 
-  initialize(tileSize) {
+  initialize() {
     this.x = PLAYER_START_X;
     this.y = PLAYER_START_Y;
-    this.width = tileSize;
-    this.height = tileSize;
+    this.width = TILE_SIZE;
+    this.height = TILE_SIZE;
     this.movePoints = PLAYER_MOVE_POINTS;
-    // this.setState("attack");
   }
 
   reset() {
