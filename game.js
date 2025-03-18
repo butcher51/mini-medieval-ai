@@ -44,13 +44,7 @@ let tilesetData = null;
 let collisionLayer = null;
 
 async function loadUI() {
-     // Load UI assets
-     uiImage = new Image();
-     await new Promise((resolve, reject) => {
-          uiImage.onload = resolve;
-          uiImage.onerror = reject;
-          uiImage.src = "assets/interface.png";
-     });
+     uiImage = await loadImage("assets/interface.png");
 }
 
 // Load map data
@@ -85,12 +79,7 @@ async function loadMap() {
           tilesetData = await tilesetResponse.json();
 
           // Load tileset image with promise
-          tilesetImage = new Image();
-          await new Promise((resolve, reject) => {
-               tilesetImage.onload = resolve;
-               tilesetImage.onerror = reject;
-               tilesetImage.src = `assets/${tilesetName}.png`;
-          });
+          tilesetImage = await loadImage(`assets/${tilesetName}.png`);
      } catch (error) {
           console.error("Error loading map:", error);
      }
@@ -469,7 +458,7 @@ async function moveCharacterAlongPath(character, path, baseTileSize) {
           const nextPos = path[i];
           character.x = nextPos.x * baseTileSize;
           character.y = nextPos.y * baseTileSize;
-          await new Promise((resolve) => setTimeout(resolve, MOVEMENT_STEP_DELAY));
+          await delay(MOVEMENT_STEP_DELAY);
      }
 
      gameState.isMoving = false;
@@ -590,14 +579,14 @@ async function processEnemyTurn() {
                await moveCharacterAlongPath(enemy, path, BASE_TILE_SIZE);
                enemy.setState("idle"); // Set enemy animation state back to idle
 
-               await new Promise((resolve) => setTimeout(resolve, 500)); // Delay before attacking
+               await delay(500); // Delay before attacking
 
                if (enemy.isAdjacent(player, BASE_TILE_SIZE)) {
                     await attack({ attacker: enemy, defender: player });
                     continue;
                }
           }
-          await new Promise((resolve) => setTimeout(resolve, 500)); // Delay before next enemy turn
+          await delay(500); // Delay before next enemy turn
      }
 
      // End enemy turn
@@ -609,24 +598,23 @@ async function attack({ attacker, defender }) {
      gameState.isMoving = true;
      attacker.setState("attack"); // Set enemy animation state to attacking
      defender.setState("hit"); // Set player animation state to hit
-     await new Promise((resolve) => setTimeout(resolve, 1000)); // Delay for attack animation
+     await delay(1000); // Delay for attack animation
      attacker.attack(defender);
      attacker.setState("idle"); // Set enemy animation state back to idle
      defender.setState("idle"); // Set player animation state back to idle
      if (defender.health <= 0) {
           defender.setState("dead"); // Set player animation state to dead
-          await new Promise((resolve) => setTimeout(resolve, 2000)); // Delay for death animation
+          await delay(2000); // Delay for death animation
           // Game over logic here
           defender.reset();
      }
      gameState.isMoving = false;
 }
 
-function endPlayerTurn() {
+async function endPlayerTurn() {
      gameState.currentTurn = "enemies";
-     setTimeout(() => {
-          processEnemyTurn();
-     }, 500); // Add a small delay before enemy turn
+     await delay(500); // Add a small delay before enemy turn
+     processEnemyTurn();
 }
 
 function isWalkable(x, y) {
@@ -649,4 +637,19 @@ function isEnemyTile(x, y) {
 
 function isPlayerTile(x, y) {
      return Math.floor(player.x / BASE_TILE_SIZE) === x && Math.floor(player.y / BASE_TILE_SIZE) === y;
+}
+
+async function loadImage(imageSrc) {
+     // Load UI assets
+     const image = new Image();
+     await new Promise((resolve, reject) => {
+          image.onload = resolve;
+          image.onerror = reject;
+          image.src = imageSrc;
+     });
+     return image;
+}
+
+async function delay(ms) {
+     return new Promise((resolve) => setTimeout(resolve, ms));
 }
