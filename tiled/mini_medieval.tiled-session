@@ -21,7 +21,7 @@
             }
         }
     },
-    "last.exportedFilePath": "C:/workspace/mini-medieval-ai/assets/maps",
+    "last.exportedFilePath": "C:/cursor_workspace/mini-medieval-ai/assets/maps",
     "last.imagePath": "C:/mini_medival_pack/Mini-Medieval-8x8",
     "lastUsedTilesetExportFilter": "JSON tileset files (*.tsj *.json)",
     "map.height": 16,
@@ -35,7 +35,7 @@
         "Overworld.tsx"
     ],
     "project": "mini_medieval.tiled-project",
-    "property.type": "object",
+    "property.type": "bool",
     "recentFiles": [
         "Overworld.tsx",
         "test-map.tmx"

@@ -1,5 +1,5 @@
 // Canvas and display settings
-export const ZOOM_LEVEL = 2;
+export const ZOOM_LEVEL = 4;
 
 // Map configuration
 export const BASE_TILE_SIZE = 8; // Tiled uses 8x8 tiles
@@ -28,3 +28,5 @@ export const ENEMY_POSITIONS = [
     { id: 'géza', x: TILE_SIZE * 10, y: TILE_SIZE * 7 },
     { id: 'feri', x: TILE_SIZE * 15, y: TILE_SIZE * 3 }
 ]; 
+
+export const INITAL_MAP = 'test-map';

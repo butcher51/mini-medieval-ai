@@ -2,7 +2,7 @@ import { findPath, isPathInRange } from "./astar.js";
 import { Player } from "./Player.js";
 import { Enemy } from "./Enemy.js";
 import { AnimationController } from "./AnimationController.js";
-import { ZOOM_LEVEL, BASE_TILE_SIZE, TILE_SIZE, PLAYER_MOVE_POINTS, ENEMY_POSITIONS, MOVEMENT_STEP_DELAY } from "./constants.js";
+import { ZOOM_LEVEL, BASE_TILE_SIZE, TILE_SIZE, PLAYER_MOVE_POINTS, ENEMY_POSITIONS, MOVEMENT_STEP_DELAY, INITAL_MAP } from "./constants.js";
 import { createGameState } from "./gameState.js";
 
 // Get the canvas context
@@ -48,12 +48,12 @@ async function loadUI() {
 }
 
 // Load map data
-async function loadMap() {
+async function loadMap(mapName) {
      try {
-          const response = await fetch("assets/maps/test-map.json");
+          const response = await fetch(`assets/maps/${mapName}.json`);
           gameMap = await response.json();
 
-          const animationsResponse = await fetch("assets/maps/test-map-animations.json");
+          const animationsResponse = await fetch(`assets/maps/map-animations.json`);
           gameMapAnimations = await animationsResponse.json();
 
           // Set map dimensions
@@ -388,7 +388,7 @@ async function startGame() {
      try {
           await AnimationController.loadAnimations();
           await loadUI();
-          await loadMap();
+          await loadMap(INITAL_MAP);
           await initialize();
           gameLoop();
      } catch (error) {
