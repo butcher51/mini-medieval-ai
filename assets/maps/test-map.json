@@ -31,6 +31,84 @@
          "y":0
         }, 
         {
+         "class":"objects",
+         "draworder":"topdown",
+         "id":4,
+         "name":"Objects",
+         "objects":[
+                {
+                 "class":"door",
+                 "height":8,
+                 "id":1,
+                 "name":"door1",
+                 "properties":[
+                        {
+                         "name":"Closed",
+                         "type":"bool",
+                         "value":false
+                        }, 
+                        {
+                         "name":"target",
+                         "type":"string",
+                         "value":"test-map-2"
+                        }],
+                 "rotation":0,
+                 "visible":true,
+                 "width":8,
+                 "x":56,
+                 "y":0
+                }, 
+                {
+                 "class":"door",
+                 "height":8,
+                 "id":2,
+                 "name":"door2",
+                 "properties":[
+                        {
+                         "name":"Closed",
+                         "type":"bool",
+                         "value":false
+                        }, 
+                        {
+                         "name":"target",
+                         "type":"string",
+                         "value":"test-map-2"
+                        }],
+                 "rotation":0,
+                 "visible":true,
+                 "width":8,
+                 "x":120,
+                 "y":48
+                }, 
+                {
+                 "class":"door",
+                 "height":8,
+                 "id":3,
+                 "name":"door3",
+                 "properties":[
+                        {
+                         "name":"Closed",
+                         "type":"bool",
+                         "value":false
+                        }, 
+                        {
+                         "name":"target",
+                         "type":"string",
+                         "value":"test-map-2"
+                        }],
+                 "rotation":0,
+                 "visible":true,
+                 "width":8,
+                 "x":40,
+                 "y":120
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
+        }, 
+        {
          "class":"collision",
          "data":[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 78,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 78,
@@ -58,11 +136,11 @@
          "x":0,
          "y":0
         }],
- "nextlayerid":4,
- "nextobjectid":1,
+ "nextlayerid":5,
+ "nextobjectid":4,
  "orientation":"orthogonal",
  "renderorder":"right-down",
- "tiledversion":"1.11.2",
+ "tiledversion":"1.9.2",
  "tileheight":8,
  "tilesets":[
         {
@@ -71,6 +149,6 @@
         }],
  "tilewidth":8,
  "type":"map",
- "version":"1.11",
+ "version":"1.9",
  "width":16
 }

@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "test-map.tmx",
+    "activeFile": "test-map-2.tmx",
     "expandedProjectPaths": [
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
@@ -12,12 +12,26 @@
             "scaleInDock": 5.5,
             "scaleInEditor": 11
         },
-        "test-map.tmx": {
-            "scale": 8,
-            "selectedLayer": 0,
+        "test-map-2.tmx": {
+            "expandedObjectLayers": [
+                5
+            ],
+            "scale": 4,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 71.9375,
-                "y": 110.875
+                "x": 70.125,
+                "y": 60.5
+            }
+        },
+        "test-map.tmx": {
+            "expandedObjectLayers": [
+                4
+            ],
+            "scale": 5.5,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 87.18181818181819,
+                "y": 66.36363636363637
             }
         }
     },
@@ -31,13 +45,14 @@
     "map.tileWidth": 8,
     "map.width": 16,
     "openFiles": [
-        "test-map.tmx",
+        "test-map-2.tmx",
         "Overworld.tsx"
     ],
     "project": "mini_medieval.tiled-project",
     "property.type": "bool",
     "recentFiles": [
         "Overworld.tsx",
+        "test-map-2.tmx",
         "test-map.tmx"
     ],
     "tileset.lastUsedFormat": "tsx",

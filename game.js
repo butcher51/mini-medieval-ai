@@ -42,6 +42,7 @@ let tilesetImage = null;
 let uiImage = null;
 let tilesetData = null;
 let collisionLayer = null;
+let objectsLayer = null;
 
 async function loadUI() {
      uiImage = await loadImage("assets/interface.png");
@@ -69,6 +70,12 @@ async function loadMap(mapName) {
           if (!collisionLayer) {
                throw new Error("No collision layer found in map data");
           }
+
+          // Find object layer
+          objectsLayer = gameMap.layers.find((layer) => layer.class === "objects");
+          if (!objectsLayer) {
+               throw new Error("No objects layer found in map data");
+          }          
 
           // Load tileset
           const tilesetSource = gameMap.tilesets[0].source;
@@ -181,6 +188,17 @@ function drawMapLayers() {
      gameMap.layers.forEach((layer) => {
           if (layer.class === "collision") return; // Skip collision layer
           if (!layer.visible) return;
+
+          if (layer.class === "objects") {
+            let x,y = 0;
+            layer.objects.forEach((object) => {
+                x = (object.x / BASE_TILE_SIZE) * ZOOM_LEVEL * 2;
+                y = (object.y / BASE_TILE_SIZE) * ZOOM_LEVEL * 2;
+                ctx.fillStyle = "rgba(255, 0, 0, 0.5)";
+                ctx.fillRect(x, y, BASE_TILE_SIZE, BASE_TILE_SIZE);
+            });
+            return;
+          }
 
           for (let y = 0; y < layer.height; y++) {
                for (let x = 0; x < layer.width; x++) {
