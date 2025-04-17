@@ -379,6 +379,14 @@ function update(deltaTime) {
 
      // Check for coin collection
      checkCoinCollection(player.x + player.width / 2, player.y + player.height / 2);
+
+     // Check if player is on a door tile
+     if (isDoorTile(player.x, player.y)) {
+          const targetMap = getDoorTarget(player.x, player.y);
+          if (targetMap) {
+               changeMap(targetMap);
+          }
+     }
 }
 
 // Main game loop
@@ -670,4 +678,63 @@ async function loadImage(imageSrc) {
 
 async function delay(ms) {
      return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function isDoorTile(x, y) {
+    if (!objectsLayer || !objectsLayer.objects) return false;
+
+    const tileX = Math.floor(x / BASE_TILE_SIZE);
+    const tileY = Math.floor(y / BASE_TILE_SIZE);
+
+    return objectsLayer.objects.some(door => {
+        const doorTileX = Math.floor(door.x / BASE_TILE_SIZE);
+        const doorTileY = Math.floor(door.y / BASE_TILE_SIZE);
+        
+        return doorTileX === tileX && 
+               doorTileY === tileY && 
+               door.class === "door" && 
+               !door.properties.find(prop => prop.name === "Closed")?.value;
+    });
+}
+
+function getDoorTarget(x, y) {
+    if (!objectsLayer || !objectsLayer.objects) return null;
+
+    const tileX = Math.floor(x / BASE_TILE_SIZE);
+    const tileY = Math.floor(y / BASE_TILE_SIZE);
+
+    const door = objectsLayer.objects.find(door => {
+        const doorTileX = Math.floor(door.x / BASE_TILE_SIZE);
+        const doorTileY = Math.floor(door.y / BASE_TILE_SIZE);
+        
+        return doorTileX === tileX && 
+               doorTileY === tileY && 
+               door.class === "door" && 
+               !door.properties.find(prop => prop.name === "Closed")?.value;
+    });
+
+    return door?.properties.find(prop => prop.name === "target")?.value || null;
+}
+
+async function changeMap(targetMap) {
+    // Reset game state
+    gameState = createGameState();
+    gameMapAnimationIndexes = null;
+    
+    // Clear enemies array
+    enemies = [];
+    
+    // Reset player state but keep health
+    const playerHealth = player.health;
+    player.reset();
+    player.health = playerHealth;
+    
+    // Load new map
+    await loadMap(targetMap);
+    
+    // Initialize characters for new map
+    const charactersLayer = gameMap.layers.find((layer) => layer.class === "characters");
+    if (charactersLayer) {
+        intializeCharacters(charactersLayer);
+    }
 }
