@@ -49,12 +49,14 @@
   <object id="2" name="door1" class="door" x="24" y="0" width="8" height="8">
    <properties>
     <property name="Closed" type="bool" value="false"/>
+    <property name="icon" value="arrow-up"/>
     <property name="target" value="test-map"/>
    </properties>
   </object>
   <object id="3" name="door2" class="door" x="0" y="88" width="8" height="8">
    <properties>
     <property name="Closed" type="bool" value="false"/>
+    <property name="icon" value="arrow-left"/>
     <property name="target" value="test-map"/>
    </properties>
   </object>

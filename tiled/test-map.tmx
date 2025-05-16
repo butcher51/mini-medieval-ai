@@ -28,18 +28,21 @@
   <object id="1" name="door1" class="door" x="56" y="0" width="8" height="8">
    <properties>
     <property name="Closed" type="bool" value="false"/>
+    <property name="icon" value="arrow-up"/>
     <property name="target" value="test-map-2"/>
    </properties>
   </object>
   <object id="2" name="door2" class="door" x="120" y="48" width="8" height="8">
    <properties>
     <property name="Closed" type="bool" value="false"/>
+    <property name="icon" value="arrow-right"/>
     <property name="target" value="test-map-2"/>
    </properties>
   </object>
   <object id="3" name="door3" class="door" x="40" y="120" width="8" height="8">
    <properties>
     <property name="Closed" type="bool" value="false"/>
+    <property name="icon" value="arrow-down"/>
     <property name="target" value="test-map-2"/>
    </properties>
   </object>

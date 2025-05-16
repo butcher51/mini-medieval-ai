@@ -84,6 +84,11 @@
                          "value":false
                         }, 
                         {
+                         "name":"icon",
+                         "type":"string",
+                         "value":"arrow-up"
+                        }, 
+                        {
                          "name":"target",
                          "type":"string",
                          "value":"test-map"
@@ -104,6 +109,11 @@
                          "name":"Closed",
                          "type":"bool",
                          "value":false
+                        }, 
+                        {
+                         "name":"icon",
+                         "type":"string",
+                         "value":"arrow-left"
                         }, 
                         {
                          "name":"target",

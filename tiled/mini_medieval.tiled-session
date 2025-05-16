@@ -49,7 +49,7 @@
         "Overworld.tsx"
     ],
     "project": "mini_medieval.tiled-project",
-    "property.type": "bool",
+    "property.type": "string",
     "recentFiles": [
         "Overworld.tsx",
         "test-map-2.tmx",

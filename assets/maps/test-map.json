@@ -48,6 +48,11 @@
                          "value":false
                         }, 
                         {
+                         "name":"icon",
+                         "type":"string",
+                         "value":"arrow-up"
+                        }, 
+                        {
                          "name":"target",
                          "type":"string",
                          "value":"test-map-2"
@@ -70,6 +75,11 @@
                          "value":false
                         }, 
                         {
+                         "name":"icon",
+                         "type":"string",
+                         "value":"arrow-right"
+                        }, 
+                        {
                          "name":"target",
                          "type":"string",
                          "value":"test-map-2"
@@ -90,6 +100,11 @@
                          "name":"Closed",
                          "type":"bool",
                          "value":false
+                        }, 
+                        {
+                         "name":"icon",
+                         "type":"string",
+                         "value":"arrow-down"
                         }, 
                         {
                          "name":"target",
