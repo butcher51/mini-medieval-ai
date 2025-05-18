@@ -50,8 +50,8 @@
    <properties>
     <property name="Closed" type="bool" value="false"/>
     <property name="icon" value="arrow-up"/>
-    <property name="target-map" value="forrest-0"/>
-    <property name="target-object" value="door3"/>
+    <property name="target-map" value="forrest-2"/>
+    <property name="target-object" value="door1"/>
    </properties>
   </object>
   <object id="3" name="door2" type="door" x="0" y="88" width="8" height="8">

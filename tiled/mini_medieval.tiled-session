@@ -30,8 +30,19 @@
             "scale": 4,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 86.5,
+                "x": 117.5,
                 "y": 81.75
+            }
+        },
+        "forrest-2.tmx": {
+            "expandedObjectLayers": [
+                5
+            ],
+            "scale": 5.5,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 117.09090909090908,
+                "y": 82.54545454545455
             }
         },
         "test-map-2.tmx": {

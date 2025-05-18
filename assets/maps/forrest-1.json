@@ -90,12 +90,12 @@
                         {
                          "name":"target-map",
                          "type":"string",
-                         "value":"forrest-0"
+                         "value":"forrest-2"
                         }, 
                         {
                          "name":"target-object",
                          "type":"string",
-                         "value":"door3"
+                         "value":"door1"
                         }],
                  "rotation":0,
                  "type":"door",
