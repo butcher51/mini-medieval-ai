@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.11" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="16" height="16" tilewidth="8" tileheight="8" infinite="0" backgroundcolor="#7e9432" nextlayerid="5" nextobjectid="5">
+ <editorsettings>
+  <export target="../assets/maps/forrest-0.json" format="json"/>
+ </editorsettings>
+ <tileset firstgid="1" source="Overworld.tsx"/>
+ <layer id="1" name="Tile Layer 1" width="16" height="16">
+  <data encoding="csv">
+1229,1276,1277,1278,1300,1301,56,8,145,34,1305,1306,1307,1282,1258,1259,
+1253,1252,1301,1302,0,0,0,56,57,58,0,0,0,1281,1282,1283,
+1277,1276,1229,1230,0,27,0,1,0,147,0,0,0,1305,1306,1307,
+1253,1252,1253,1254,0,0,0,1,0,0,147,0,28,0,0,0,
+1277,1276,1277,1278,0,25,0,1,0,0,0,0,0,147,0,1251,
+1301,1300,1301,1302,0,0,0,1,1,1,1,99,0,0,0,1275,
+1229,1230,0,0,0,75,0,0,27,0,3,26,939,939,939,939,
+1253,1254,0,0,0,0,0,0,0,0,0,0,939,0,0,1062,
+1277,1278,27,0,0,0,193,194,194,194,195,0,939,0,1365,1366,
+1301,1302,0,0,147,0,217,218,218,218,219,25,939,0,1389,1390,
+0,1357,1358,0,25,0,241,242,847,242,243,0,939,0,1413,1414,
+1304,1381,1382,0,0,0,265,266,266,266,267,939,939,0,1240,1241,
+1328,25,0,0,28,28,0,0,0,0,939,939,0,51,1264,1265,
+145,0,0,25,0,0,25,0,4,939,939,0,0,0,1288,1289,
+1234,1235,1236,0,0,4,939,939,939,939,0,25,0,0,0,0,
+1258,1259,1260,0,0,939,939,0,0,0,0,0,0,1354,1355,0
+</data>
+ </layer>
+ <objectgroup id="4" name="Objects" class="objects">
+  <object id="2" name="door2" type="door" x="120" y="48" width="8" height="8">
+   <properties>
+    <property name="Closed" type="bool" value="false"/>
+    <property name="icon" value="arrow-right"/>
+    <property name="target-map" value="forrest-1"/>
+    <property name="target-object" value="door2"/>
+   </properties>
+  </object>
+  <object id="3" name="door3" type="door" x="40" y="120" width="8" height="8">
+   <properties>
+    <property name="Closed" type="bool" value="false"/>
+    <property name="icon" value="arrow-down"/>
+    <property name="target-map" value="forrest-1"/>
+    <property name="target-object" value="door1"/>
+   </properties>
+  </object>
+  <object id="4" name="start" type="start" x="32" y="16" width="8" height="8"/>
+ </objectgroup>
+ <layer id="3" name="Collision" class="collision" width="16" height="16" opacity="0.6">
+  <data encoding="csv">
+78,78,78,78,78,78,78,78,78,78,0,78,78,78,78,78,
+78,78,78,0,0,0,0,78,78,78,0,0,0,78,78,78,
+78,78,78,0,0,0,0,0,0,0,0,0,0,0,78,78,
+78,78,78,78,0,0,0,0,0,0,0,0,0,0,0,0,
+78,78,78,78,0,0,0,0,0,0,0,0,0,0,0,78,
+78,78,78,0,0,0,0,0,0,0,0,0,0,0,0,78,
+78,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+78,78,0,0,0,0,0,0,0,0,0,0,0,0,78,78,
+78,78,0,0,0,0,78,78,78,78,78,0,0,0,78,78,
+78,0,0,0,0,0,78,78,78,78,78,0,0,0,78,78,
+0,78,78,0,0,0,78,78,78,78,78,0,0,0,78,78,
+78,78,78,0,0,0,78,78,78,78,78,0,0,0,78,78,
+78,0,0,0,0,0,0,0,0,0,0,0,0,0,78,78,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,78,78,
+78,78,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+78,78,78,0,0,0,0,0,0,0,0,0,0,78,78,0
+</data>
+ </layer>
+</map>

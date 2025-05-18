@@ -112,10 +112,23 @@ async function loadMap(mapName) {
     }
 }
 
-function intializeCharacters(charactersLayer) {
-    // Initialize player, TODO: this should come from the map data
-    player.initialize();
+function movePlayerToStartPos(targetObject = 'start') {
 
+    // Find start position from objects layer
+    const startObject = objectsLayer.objects.find(obj => obj.name === targetObject);
+        
+    if (startObject) {
+        // Initialize player at start position, converting pixel coordinates to tile coordinates
+        player.x = Math.floor(startObject.x / BASE_TILE_SIZE) * BASE_TILE_SIZE;
+        player.y = Math.floor(startObject.y / BASE_TILE_SIZE) * BASE_TILE_SIZE;
+    }
+}
+
+function intializeCharacters(charactersLayer) {
+
+    movePlayerToStartPos();
+
+    // Initialize enemies
     enemies = ENEMY_POSITIONS.map(
         (pos) => new Enemy(pos.id, pos.x, pos.y, TILE_SIZE, TILE_SIZE)
     );
@@ -269,8 +282,8 @@ function drawMapLayers() {
                     if (animationIndex !== null) {
                         tileIndex =
                             animationIndex.frames[
-                                animationIndex.currentFrame +
-                                    (now % animationIndex.length)
+                            animationIndex.currentFrame +
+                            (now % animationIndex.length)
                             ];
                     } else {
                         gameMapAnimationIndexes[y][x] = {
@@ -495,14 +508,6 @@ function update(deltaTime) {
         player.x + player.width / 2,
         player.y + player.height / 2
     );
-
-    // Check if player is on a door tile
-    if (isDoorTile(player.x, player.y)) {
-        const targetMap = getDoorTarget(player.x, player.y);
-        if (targetMap) {
-            changeMap(targetMap);
-        }
-    }
 }
 
 // Main game loop
@@ -538,7 +543,7 @@ async function startGame() {
     }
 }
 
-async function initialize() {
+async function initialize(targetObject) {
     gameState = createGameState();
 
     // Find collision layer
@@ -549,6 +554,7 @@ async function initialize() {
         intializeCharacters(charactersLayer);
     } else {
         player.initialize();
+        movePlayerToStartPos(targetObject);
     }
 }
 
@@ -622,7 +628,7 @@ async function moveCharacterAlongPath(character, path, baseTileSize) {
     gameState.hoveredTile = { x: -1, y: -1 }; // Reset hover state
 }
 
-// Modify the click handler to include combat
+// Modify the click handler to include history for player actions
 canvas.addEventListener("click", async (e) => {
     if (gameState.currentTurn !== "player" || gameState.isMoving) return;
 
@@ -630,7 +636,7 @@ canvas.addEventListener("click", async (e) => {
     const clickX = e.clientX - rect.left;
     const clickY = e.clientY - rect.top;
 
-    // Check if skip button was clicked (skip button is in screen space, not game space)
+    // Check if skip button was clicked
     if (
         gameState.skipButton &&
         clickX >= gameState.skipButton.x &&
@@ -638,7 +644,13 @@ canvas.addEventListener("click", async (e) => {
         clickY >= gameState.skipButton.y &&
         clickY <= gameState.skipButton.y + gameState.skipButton.height
     ) {
-        // Skip turn
+        // Add skip turn to history
+        gameState.turnHistory.push({
+            character: 'player',
+            action: 'skip_turn',
+            timestamp: Date.now()
+        });
+
         gameState.currentPath = null;
         gameState.hoveredTile = { x: -1, y: -1 };
         endPlayerTurn();
@@ -662,6 +674,15 @@ canvas.addEventListener("click", async (e) => {
     if (targetEnemy && player.isAdjacent(targetEnemy, BASE_TILE_SIZE)) {
         // Attack the enemy
         await attack({ attacker: player, defender: targetEnemy });
+        
+        // Add attack to history
+        gameState.turnHistory.push({
+            character: 'player',
+            action: 'attack',
+            target: targetEnemy.id,
+            position: { x: clickedTileX, y: clickedTileY },
+            timestamp: Date.now()
+        });
 
         // Reset path and hover highlight after attack
         gameState.currentPath = null;
@@ -698,8 +719,34 @@ canvas.addEventListener("click", async (e) => {
 
         player.setState("idle"); // Set player animation state back to idle
 
+        // Add movement to history
+        gameState.turnHistory.push({
+            character: 'player',
+            action: 'move',
+            path: movementPath.map(p => ({ x: p.x, y: p.y })),
+            timestamp: Date.now()
+        });
+
+        // Check if player is on a door tile
+        if (isDoorTile(player.x, player.y)) {
+            const target = getDoorTarget(player.x, player.y);
+            if (target) {
+                changeMap(target);
+
+                gameState.turnHistory.push({
+                    character: 'player',
+                    action: 'exit',
+                    position: { x: Math.floor(player.x / BASE_TILE_SIZE), y: Math.floor(player.y / BASE_TILE_SIZE) },
+                    timestamp: Date.now(),
+                    target
+                });
+            
+            }
+        }
+
         // End turn immediately after movement
         endPlayerTurn();
+
     }
 });
 
@@ -727,6 +774,14 @@ async function processEnemyTurn() {
         // If adjacent to player, attack
         if (enemy.isAdjacent(player, BASE_TILE_SIZE)) {
             await attack({ attacker: enemy, defender: player });
+            // Add enemy attack to history
+            gameState.turnHistory.push({
+                character: enemy.id,
+                action: 'attack',
+                target: 'player',
+                position: { x: enemyTileX, y: enemyTileY },
+                timestamp: Date.now()
+            });
             continue;
         }
 
@@ -746,10 +801,26 @@ async function processEnemyTurn() {
             await moveCharacterAlongPath(enemy, path, BASE_TILE_SIZE);
             enemy.setState("idle"); // Set enemy animation state back to idle
 
+            // Add enemy movement to history
+            gameState.turnHistory.push({
+                character: enemy.id,
+                action: 'move',
+                path: path.map(p => ({ x: p.x, y: p.y })),
+                timestamp: Date.now()
+            });
+
             await delay(500); // Delay before attacking
 
             if (enemy.isAdjacent(player, BASE_TILE_SIZE)) {
                 await attack({ attacker: enemy, defender: player });
+                // Add enemy attack to history
+                gameState.turnHistory.push({
+                    character: enemy.id,
+                    action: 'attack',
+                    target: 'player',
+                    position: { x: Math.floor(enemy.x / BASE_TILE_SIZE), y: Math.floor(enemy.y / BASE_TILE_SIZE) },
+                    timestamp: Date.now()
+                });
                 continue;
             }
         }
@@ -779,6 +850,14 @@ async function attack({ attacker, defender }) {
 }
 
 async function endPlayerTurn() {
+    // Add player's turn to history
+    gameState.turnHistory.push({
+        character: 'player',
+        action: 'end_turn',
+        position: { x: Math.floor(player.x / BASE_TILE_SIZE), y: Math.floor(player.y / BASE_TILE_SIZE) },
+        timestamp: Date.now()
+    });
+
     gameState.currentTurn = "enemies";
     await delay(500); // Add a small delay before enemy turn
     processEnemyTurn();
@@ -842,7 +921,7 @@ function isDoorTile(x, y) {
         return (
             doorTileX === tileX &&
             doorTileY === tileY &&
-            door.class === "door" &&
+            door.type === "door" &&
             !door.properties.find((prop) => prop.name === "Closed")?.value
         );
     });
@@ -861,17 +940,18 @@ function getDoorTarget(x, y) {
         return (
             doorTileX === tileX &&
             doorTileY === tileY &&
-            door.class === "door" &&
+            door.type === "door" &&
             !door.properties.find((prop) => prop.name === "Closed")?.value
         );
     });
 
-    return (
-        door?.properties.find((prop) => prop.name === "target")?.value || null
-    );
+    return ({
+        targetMap: door?.properties.find((prop) => prop.name === "target-map")?.value || null,
+        targetObject: door?.properties.find((prop) => prop.name === "target-object")?.value || null
+    });
 }
 
-async function changeMap(targetMap) {
+async function changeMap(target) {
     // Reset game state
     gameState = createGameState();
     gameMapAnimationIndexes = null;
@@ -885,13 +965,7 @@ async function changeMap(targetMap) {
     player.health = playerHealth;
 
     // Load new map
-    await loadMap(targetMap);
+    await loadMap(target.targetMap);
 
-    // Initialize characters for new map
-    const charactersLayer = gameMap.layers.find(
-        (layer) => layer.class === "characters"
-    );
-    if (charactersLayer) {
-        intializeCharacters(charactersLayer);
-    }
+    initialize(target.targetObject);
 }

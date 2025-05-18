@@ -29,4 +29,4 @@ export const ENEMY_POSITIONS = [
     { id: 'feri', x: TILE_SIZE * 15, y: TILE_SIZE * 3 }
 ]; 
 
-export const INITAL_MAP = 'test-map';
+export const INITAL_MAP = 'forrest-0';

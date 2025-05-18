@@ -12,14 +12,36 @@
             "scaleInDock": 5.5,
             "scaleInEditor": 11
         },
-        "test-map-2.tmx": {
+        "forrest-0.tmx": {
+            "expandedObjectLayers": [
+                4
+            ],
+            "scale": 5.5,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 87.0909090909091,
+                "y": 66.36363636363637
+            }
+        },
+        "forrest-1.tmx": {
             "expandedObjectLayers": [
                 5
             ],
             "scale": 4,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 70.125,
+                "x": 86.5,
+                "y": 81.75
+            }
+        },
+        "test-map-2.tmx": {
+            "expandedObjectLayers": [
+                5
+            ],
+            "scale": 4,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 39,
                 "y": 60.5
             }
         },
@@ -30,12 +52,12 @@
             "scale": 5.5,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 87.18181818181819,
+                "x": 87.0909090909091,
                 "y": 66.36363636363637
             }
         }
     },
-    "last.exportedFilePath": "C:/cursor_workspace/mini-medieval-ai/assets/maps",
+    "last.exportedFilePath": "C:/workspace/mini-medieval-ai/assets/maps",
     "last.imagePath": "C:/mini_medival_pack/Mini-Medieval-8x8",
     "lastUsedTilesetExportFilter": "JSON tileset files (*.tsj *.json)",
     "map.height": 16,
