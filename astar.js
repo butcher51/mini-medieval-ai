@@ -32,11 +32,10 @@ export function findPath(startX, startY, endX, endY, isWalkable) {
         openSet.delete(current);
         closedSet.add(current);
         
-        // Check all adjacent squares
+        // Check all adjacent squares (including diagonals)
         for (let dx of [-1, 0, 1]) {
             for (let dy of [-1, 0, 1]) {
                 if (dx === 0 && dy === 0) continue; // Skip current square
-                if (Math.abs(dx) === 1 && Math.abs(dy) === 1) continue; // Skip diagonals
                 
                 const newX = current.x + dx;
                 const newY = current.y + dy;
@@ -51,8 +50,10 @@ export function findPath(startX, startY, endX, endY, isWalkable) {
                     continue;
                 }
                 
-                // Calculate g score
-                const tentativeG = current.g + 1;
+                // Calculate g score - diagonal movement costs more
+                const isDiagonal = Math.abs(dx) === 1 && Math.abs(dy) === 1;
+                const moveCost = isDiagonal ? 1.414 : 1; // √2 for diagonal, 1 for orthogonal
+                const tentativeG = current.g + moveCost;
                 
                 // Check if this path is better than any previous one
                 const existingNeighbor = Array.from(openSet).find(node => 
@@ -61,7 +62,7 @@ export function findPath(startX, startY, endX, endY, isWalkable) {
                 
                 if (!existingNeighbor) {
                     neighbor.g = tentativeG;
-                    neighbor.h = manhattanDistance(neighbor, endNode);
+                    neighbor.h = euclideanDistance(neighbor, endNode);
                     neighbor.f = neighbor.g + neighbor.h;
                     neighbor.parent = current;
                     openSet.add(neighbor);
@@ -78,8 +79,10 @@ export function findPath(startX, startY, endX, endY, isWalkable) {
     return null;
 }
 
-function manhattanDistance(nodeA, nodeB) {
-    return Math.abs(nodeA.x - nodeB.x) + Math.abs(nodeA.y - nodeB.y);
+function euclideanDistance(nodeA, nodeB) {
+    const dx = nodeA.x - nodeB.x;
+    const dy = nodeA.y - nodeB.y;
+    return Math.sqrt(dx * dx + dy * dy);
 }
 
 function reconstructPath(endNode) {
@@ -96,5 +99,15 @@ function reconstructPath(endNode) {
 
 // Helper function to check if a path is within move range
 export function isPathInRange(path, movePoints) {
-    return path && path.length - 1 <= movePoints; // -1 because path includes starting position
+    if (!path) return false;
+    
+    // Calculate actual path cost considering diagonal movement
+    let totalCost = 0;
+    for (let i = 1; i < path.length; i++) {
+        const dx = Math.abs(path[i].x - path[i-1].x);
+        const dy = Math.abs(path[i].y - path[i-1].y);
+        totalCost += (dx === 1 && dy === 1) ? 1.414 : 1;
+    }
+    
+    return totalCost <= movePoints;
 } 
