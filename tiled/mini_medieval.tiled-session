@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "test-map-2.tmx",
+    "activeFile": "forrest-0.tmx",
     "expandedProjectPaths": [
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
@@ -16,11 +16,11 @@
             "expandedObjectLayers": [
                 4
             ],
-            "scale": 5.5,
-            "selectedLayer": 1,
+            "scale": 4,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 87.0909090909091,
-                "y": 66.36363636363637
+                "x": 59.625,
+                "y": 79.25
             }
         },
         "forrest-1.tmx": {
@@ -39,10 +39,21 @@
                 5
             ],
             "scale": 5.5,
-            "selectedLayer": 1,
+            "selectedLayer": 0,
             "viewCenter": {
-                "x": 117.09090909090908,
-                "y": 82.54545454545455
+                "x": 61.36363636363636,
+                "y": 83.45454545454545
+            }
+        },
+        "forrest-3.tmx": {
+            "expandedObjectLayers": [
+                4
+            ],
+            "scale": 5.5,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 62.63636363636363,
+                "y": 55.0909090909091
             }
         },
         "test-map-2.tmx": {
@@ -68,7 +79,7 @@
             }
         }
     },
-    "last.exportedFilePath": "C:/workspace/mini-medieval-ai/assets/maps",
+    "last.exportedFilePath": "C:/cursor_workspace/mini-medieval-ai/assets/maps",
     "last.imagePath": "C:/mini_medival_pack/Mini-Medieval-8x8",
     "lastUsedTilesetExportFilter": "JSON tileset files (*.tsj *.json)",
     "map.height": 16,
@@ -78,13 +89,16 @@
     "map.tileWidth": 8,
     "map.width": 16,
     "openFiles": [
-        "test-map-2.tmx",
-        "Overworld.tsx"
+        "Overworld.tsx",
+        "forrest-0.tmx",
+        "forrest-2.tmx"
     ],
     "project": "mini_medieval.tiled-project",
     "property.type": "string",
     "recentFiles": [
         "Overworld.tsx",
+        "forrest-2.tmx",
+        "forrest-0.tmx",
         "test-map-2.tmx",
         "test-map.tmx"
     ],

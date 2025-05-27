@@ -15,7 +15,7 @@ export const PLAYER_START_Y = TILE_SIZE * 2;
 export const PLAYER_HEALTH = 10;
 export const PLAYER_MAX_HEALTH = 10;
 export const PLAYER_DAMAGE = 3;
-export const PLAYER_MOVE_POINTS = 10;
+export const PLAYER_MOVE_POINTS = 25;
 
 // Enemy settings
 export const ENEMY_HEALTH = 5;
