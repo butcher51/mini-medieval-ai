@@ -19,8 +19,8 @@
             "scale": 4,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 59.625,
-                "y": 79.25
+                "x": 64,
+                "y": 63.875
             }
         },
         "forrest-1.tmx": {
@@ -28,7 +28,7 @@
                 5
             ],
             "scale": 5.5,
-            "selectedLayer": 1,
+            "selectedLayer": 0,
             "viewCenter": {
                 "x": 68.27272727272728,
                 "y": 69.0909090909091
@@ -41,8 +41,8 @@
             "scale": 5.5,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 63.90909090909092,
-                "y": 64.00000000000001
+                "x": 64,
+                "y": 64.0909090909091
             }
         },
         "forrest-3.tmx": {
@@ -52,8 +52,8 @@
             "scale": 4,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 81.625,
-                "y": 79.5
+                "x": 72.75,
+                "y": 63.875
             }
         },
         "test-map-2.tmx": {
