@@ -3,13 +3,13 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "forrest-1.tmx",
+    "activeFile": "forrest-4.tmx",
     "expandedProjectPaths": [
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
         "Overworld.tsx": {
-            "scaleInDock": 5.5,
+            "scaleInDock": 3,
             "scaleInEditor": 11
         },
         "forrest-0.tmx": {
@@ -30,8 +30,8 @@
             "scale": 5.5,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 68.27272727272728,
-                "y": 69.0909090909091
+                "x": 64,
+                "y": 64.0909090909091
             }
         },
         "forrest-2.tmx": {
@@ -54,6 +54,17 @@
             "viewCenter": {
                 "x": 72.75,
                 "y": 63.875
+            }
+        },
+        "forrest-4.tmx": {
+            "expandedObjectLayers": [
+                4
+            ],
+            "scale": 4,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 81.625,
+                "y": 46.5
             }
         },
         "test-map-2.tmx": {
@@ -90,7 +101,7 @@
     "map.width": 16,
     "openFiles": [
         "Overworld.tsx",
-        "forrest-3.tmx",
+        "forrest-4.tmx",
         "forrest-2.tmx",
         "forrest-0.tmx",
         "forrest-1.tmx"
@@ -99,10 +110,11 @@
     "property.type": "string",
     "recentFiles": [
         "Overworld.tsx",
-        "forrest-3.tmx",
-        "forrest-2.tmx",
-        "forrest-0.tmx",
         "forrest-1.tmx",
+        "forrest-0.tmx",
+        "forrest-2.tmx",
+        "forrest-4.tmx",
+        "forrest-3.tmx",
         "test-map-2.tmx",
         "test-map.tmx"
     ],
