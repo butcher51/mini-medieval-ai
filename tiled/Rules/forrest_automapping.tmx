@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.11" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="16" height="16" tilewidth="8" tileheight="8" infinite="0" backgroundcolor="#00ffffff" nextlayerid="36" nextobjectid="6">
+<map version="1.11" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="16" height="16" tilewidth="8" tileheight="8" infinite="0" backgroundcolor="#00ffffff" nextlayerid="40" nextobjectid="6">
  <editorsettings>
   <export format="json"/>
  </editorsettings>
  <tileset firstgid="1" source="../Overworld.tsx"/>
  <tileset firstgid="2233" source=":/automap-tiles.tsx"/>
- <layer id="5" name="input1_Level" width="16" height="16">
+ <layer id="5" name="input1_Level" width="16" height="16" visible="0">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,78,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -25,10 +25,10 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="6" name="output1_Ground" width="16" height="16">
+ <layer id="38" name="input1_LevelH" width="16" height="16">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,78,0,0,78,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -45,7 +45,27 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="8" name="output2_Ground" width="16" height="16">
+ <layer id="6" name="output1_Ground" width="16" height="16" visible="0">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,176,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <layer id="8" name="output2_Ground" width="16" height="16" visible="0">
   <properties>
    <property name="Probability" type="float" value="0.1"/>
   </properties>
@@ -68,7 +88,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="9" name="output3_Ground" width="16" height="16">
+ <layer id="9" name="output3_Ground" width="16" height="16" visible="0">
   <properties>
    <property name="Probability" type="float" value="0.1"/>
   </properties>
@@ -91,7 +111,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="10" name="output4_Ground" width="16" height="16">
+ <layer id="10" name="output4_Ground" width="16" height="16" visible="0">
   <properties>
    <property name="Probability" type="float" value="0.05"/>
   </properties>
@@ -114,7 +134,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="11" name="output5_Ground" width="16" height="16">
+ <layer id="11" name="output5_Ground" width="16" height="16" visible="0">
   <properties>
    <property name="Probability" type="float" value="0.05"/>
   </properties>
@@ -137,7 +157,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="12" name="output6_Ground" width="16" height="16">
+ <layer id="12" name="output6_Ground" width="16" height="16" visible="0">
   <properties>
    <property name="Probability" type="float" value="0.01"/>
   </properties>
@@ -160,7 +180,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="15" name="output7_Ground" width="16" height="16">
+ <layer id="15" name="output7_Ground" width="16" height="16" visible="0">
   <properties>
    <property name="Probability" type="float" value="0.01"/>
   </properties>
@@ -183,7 +203,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="16" name="output8_Ground" width="16" height="16">
+ <layer id="16" name="output8_Ground" width="16" height="16" visible="0">
   <properties>
    <property name="Probability" type="float" value="0.01"/>
   </properties>
@@ -206,7 +226,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="17" name="output9_Ground" width="16" height="16">
+ <layer id="17" name="output9_Ground" width="16" height="16" visible="0">
   <properties>
    <property name="Probability" type="float" value="0.01"/>
   </properties>
@@ -229,7 +249,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="18" name="output10_Ground" width="16" height="16">
+ <layer id="18" name="output10_Ground" width="16" height="16" visible="0">
   <properties>
    <property name="Probability" type="float" value="0.01"/>
   </properties>
@@ -252,7 +272,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="19" name="output11_Ground" width="16" height="16">
+ <layer id="19" name="output11_Ground" width="16" height="16" visible="0">
   <properties>
    <property name="Probability" type="float" value="0.005"/>
   </properties>
@@ -275,7 +295,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="20" name="output12_Ground" width="16" height="16">
+ <layer id="20" name="output12_Ground" width="16" height="16" visible="0">
   <properties>
    <property name="Probability" type="float" value="0.005"/>
   </properties>
@@ -298,7 +318,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="21" name="output13_Ground" width="16" height="16">
+ <layer id="21" name="output13_Ground" width="16" height="16" visible="0">
   <properties>
    <property name="Probability" type="float" value="0.005"/>
   </properties>
@@ -321,7 +341,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="22" name="output14_Ground" width="16" height="16">
+ <layer id="22" name="output14_Ground" width="16" height="16" visible="0">
   <properties>
    <property name="Probability" type="float" value="0.005"/>
   </properties>
@@ -344,7 +364,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="23" name="output15_Ground" width="16" height="16">
+ <layer id="23" name="output15_Ground" width="16" height="16" visible="0">
   <properties>
    <property name="Probability" type="float" value="0.005"/>
   </properties>
@@ -367,7 +387,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="24" name="output16_Ground" width="16" height="16">
+ <layer id="24" name="output16_Ground" width="16" height="16" visible="0">
   <properties>
    <property name="Probability" type="float" value="0.005"/>
   </properties>
@@ -390,7 +410,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="25" name="output17_Ground" width="16" height="16">
+ <layer id="25" name="output17_Ground" width="16" height="16" visible="0">
   <properties>
    <property name="Probability" type="float" value="0.005"/>
   </properties>
@@ -413,7 +433,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="26" name="output18_Ground" width="16" height="16">
+ <layer id="26" name="output18_Ground" width="16" height="16" visible="0">
   <properties>
    <property name="Probability" type="float" value="0.005"/>
   </properties>
@@ -436,7 +456,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="27" name="output19_Ground" width="16" height="16">
+ <layer id="27" name="output19_Ground" width="16" height="16" visible="0">
   <properties>
    <property name="Probability" type="float" value="0.005"/>
   </properties>
@@ -459,7 +479,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="28" name="output20_Ground" width="16" height="16">
+ <layer id="28" name="output20_Ground" width="16" height="16" visible="0">
   <properties>
    <property name="Probability" type="float" value="0.005"/>
   </properties>
@@ -482,7 +502,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="29" name="output21_Ground" width="16" height="16">
+ <layer id="29" name="output21_Ground" width="16" height="16" visible="0">
   <properties>
    <property name="Probability" type="float" value="0.005"/>
   </properties>
@@ -505,7 +525,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="30" name="output22_Ground" width="16" height="16">
+ <layer id="30" name="output22_Ground" width="16" height="16" visible="0">
   <properties>
    <property name="Probability" type="float" value="0.005"/>
   </properties>
@@ -528,7 +548,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="31" name="output23_Ground" width="16" height="16">
+ <layer id="31" name="output23_Ground" width="16" height="16" visible="0">
   <properties>
    <property name="Probability" type="float" value="0.005"/>
   </properties>
@@ -551,7 +571,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="32" name="output24_Ground" width="16" height="16">
+ <layer id="32" name="output24_Ground" width="16" height="16" visible="0">
   <properties>
    <property name="Probability" type="float" value="0.005"/>
   </properties>
@@ -574,7 +594,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="33" name="output25_Ground" width="16" height="16">
+ <layer id="33" name="output25_Ground" width="16" height="16" visible="0">
   <properties>
    <property name="Probability" type="float" value="0.005"/>
   </properties>
@@ -597,7 +617,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="34" name="output26_Ground" width="16" height="16">
+ <layer id="34" name="output26_Ground" width="16" height="16" visible="0">
   <properties>
    <property name="Probability" type="float" value="0.005"/>
   </properties>
@@ -620,7 +640,7 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="35" name="output27_Ground" width="16" height="16">
+ <layer id="35" name="output27_Ground" width="16" height="16" visible="0">
   <properties>
    <property name="Probability" type="float" value="0.005"/>
   </properties>
