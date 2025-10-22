@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "Rules/forrest_automapping.tmx",
+    "activeFile": "forrest-5.tmx",
     "automapping.whileDrawing": false,
     "expandedProjectPaths": [
     ],
@@ -17,7 +17,7 @@
         },
         "Overworld.tsx": {
             "scaleInDock": 3,
-            "scaleInEditor": 2
+            "scaleInEditor": 5.5
         },
         "Rules/Overworld.tsx": {
             "scaleInDock": 1
@@ -26,8 +26,8 @@
             "scale": 4,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 64.5,
-                "y": 60.25
+                "x": 76,
+                "y": 53.25
             }
         },
         "forrest-0.tmx": {
@@ -146,8 +146,8 @@
     "property.type": "string",
     "recentFiles": [
         "Overworld.tsx",
-        "forrest-5.tmx",
         "Rules/forrest_automapping.tmx",
+        "forrest-5.tmx",
         "forrest-0.tmx",
         "forrest_automapping.tmx",
         "forrest-4.tmx",
