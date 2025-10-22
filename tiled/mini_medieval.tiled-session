@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "forrest-5.tmx",
+    "activeFile": "Rules/forrest_automapping.tmx",
     "automapping.whileDrawing": false,
     "expandedProjectPaths": [
     ],
@@ -24,9 +24,9 @@
         },
         "Rules/forrest_automapping.tmx": {
             "scale": 4,
-            "selectedLayer": 1,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 56.25,
+                "x": 64.5,
                 "y": 60.25
             }
         },
@@ -92,7 +92,7 @@
             "scale": 5.5,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 60.36363636363636,
+                "x": 66.36363636363636,
                 "y": 63.27272727272728
             }
         },
@@ -139,15 +139,15 @@
     "map.width": 16,
     "openFiles": [
         "Overworld.tsx",
-        "forrest-5.tmx",
-        "Rules/forrest_automapping.tmx"
+        "Rules/forrest_automapping.tmx",
+        "forrest-5.tmx"
     ],
     "project": "mini_medieval.tiled-project",
     "property.type": "string",
     "recentFiles": [
         "Overworld.tsx",
-        "Rules/forrest_automapping.tmx",
         "forrest-5.tmx",
+        "Rules/forrest_automapping.tmx",
         "forrest-0.tmx",
         "forrest_automapping.tmx",
         "forrest-4.tmx",
