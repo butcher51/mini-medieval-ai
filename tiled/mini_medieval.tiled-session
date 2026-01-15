@@ -46,7 +46,7 @@
         },
         "Rules/forrest_automapping.tmx": {
             "scale": 4,
-            "selectedLayer": 1,
+            "selectedLayer": 7,
             "viewCenter": {
                 "x": 119.75,
                 "y": 75.125
@@ -68,10 +68,10 @@
                 5
             ],
             "scale": 5.5,
-            "selectedLayer": 0,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 63.90909090909092,
-                "y": 64.00000000000001
+                "x": 64,
+                "y": 64.0909090909091
             }
         },
         "forrest-2.tmx": {
@@ -111,11 +111,11 @@
             "expandedObjectLayers": [
                 4
             ],
-            "scale": 3,
-            "selectedLayer": 0,
+            "scale": 4,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 122.99999999999999,
-                "y": 128.16666666666669
+                "x": 133.5,
+                "y": 93.875
             }
         },
         "forrest_automapping.tmx": {

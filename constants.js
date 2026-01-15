@@ -25,8 +25,11 @@ export const ENEMY_MOVE_POINTS = 3;
 
 // Enemy positions
 export const ENEMY_POSITIONS = [
-    { id: 'géza', x: TILE_SIZE * 10, y: TILE_SIZE * 7 },
-    { id: 'feri', x: TILE_SIZE * 15, y: TILE_SIZE * 3 }
+    // { id: 'géza', x: TILE_SIZE * 10, y: TILE_SIZE * 7 },
+    // { id: 'feri', x: TILE_SIZE * 15, y: TILE_SIZE * 3 }
 ]; 
 
 export const INITAL_MAP = 'forrest-0';
+
+// Save system version - increment when save format changes
+export const SAVE_VERSION = 11;

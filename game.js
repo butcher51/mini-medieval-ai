@@ -12,6 +12,7 @@ import {
     INITAL_MAP,
 } from "./constants.js";
 import { createGameState } from "./gameState.js";
+import { saveManager } from "./SaveManager.js";
 
 // Get the canvas context
 const canvas = document.getElementById("gameCanvas");
@@ -178,30 +179,6 @@ function isTileCollidable(x, y) {
 
     const tileIndex = tileY * MAP_WIDTH + tileX;
     return collisionLayer.data[tileIndex] !== 0;
-}
-
-// Check for coin collection (coins are tiles with index 6 in the items layer)
-function checkCoinCollection(playerX, playerY) {
-    if (!gameMap) return;
-
-    const itemsLayer = gameMap.layers.find((layer) => layer.name === "Items");
-    if (!itemsLayer) return;
-
-    const tileX = Math.floor(playerX / TILE_SIZE);
-    const tileY = Math.floor(playerY / TILE_SIZE);
-
-    if (tileX < 0 || tileX >= MAP_WIDTH || tileY < 0 || tileY >= MAP_HEIGHT)
-        return;
-
-    const tileIndex = tileY * MAP_WIDTH + tileX;
-    const tileId = itemsLayer.data[tileIndex];
-
-    // Check if the tile is a coin (you'll need to determine the correct tile ID for coins in your tileset)
-    if (tileId === 6) {
-        // Update this ID based on your tileset
-        itemsLayer.data[tileIndex] = 0; // Remove coin
-        player.coins++;
-    }
 }
 
 function drawObject(object, x, y) {
@@ -513,12 +490,6 @@ function update(deltaTime) {
         // Map larger than viewport: clamp camera to map bounds
         gameState.cameraY = Math.max(0, Math.min(gameState.cameraY, gameHeight - viewportHeight));
     }
-
-    // Check for coin collection
-    checkCoinCollection(
-        player.x + player.width / 2,
-        player.y + player.height / 2
-    );
 }
 
 // Main game loop
@@ -546,8 +517,19 @@ async function startGame() {
     try {
         await AnimationController.loadAnimations();
         await loadUI();
-        await loadMap(INITAL_MAP);
-        await initialize();
+
+        const save = saveManager.getCurrentMap();
+        const mapToLoad = save?.targetMap || INITAL_MAP;
+
+        await loadMap(mapToLoad);
+
+        // Save the initial map if no save exists
+        if (!save) {
+            saveManager.setCurrentMap(mapToLoad);
+        }
+
+        await initialize(save?.targetObject);
+
         gameLoop();
     } catch (error) {
         console.error("Error starting game:", error);
@@ -963,6 +945,9 @@ function getDoorTarget(x, y) {
 }
 
 async function changeMap(target) {
+    // Save the new map name
+    saveManager.setCurrentMap(target);
+
     // Reset game state
     gameState = createGameState();
     gameMapAnimationIndexes = null;

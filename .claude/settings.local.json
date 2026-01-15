@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(ls -la \"C:\\\\workspace\\\\mini-medieval-ai\\\\assets\\\\maps\"\" 2>/dev/null || dir \"C:workspacemini-medieval-aiassetsmaps\"\")"
     ]
   }
 }
