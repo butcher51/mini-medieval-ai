@@ -386,9 +386,15 @@ function draw() {
     // Clear the canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Calculate the offset to center the game area
-    const offsetX = (canvas.width - gameWidth * ZOOM_LEVEL) / 2;
-    const offsetY = (canvas.height - gameHeight * ZOOM_LEVEL) / 2;
+    // Fill canvas background with map's background color (visible outside map bounds)
+    if (gameMap && gameMap.backgroundcolor) {
+        ctx.fillStyle = gameMap.backgroundcolor;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    // Calculate the offset to center the game area (0 when map is larger than viewport)
+    const offsetX = Math.max(0, (canvas.width - gameWidth * ZOOM_LEVEL) / 2);
+    const offsetY = Math.max(0, (canvas.height - gameHeight * ZOOM_LEVEL) / 2);
 
     // Apply transforms in correct order
     ctx.translate(offsetX, offsetY);
@@ -493,15 +499,22 @@ function update(deltaTime) {
     gameState.cameraX = player.x - viewportWidth / 2 + BASE_TILE_SIZE / 2;
     gameState.cameraY = player.y - viewportHeight / 2 + BASE_TILE_SIZE / 2;
 
-    // Camera bounds
-    gameState.cameraX = Math.max(
-        0,
-        Math.min(gameState.cameraX, gameWidth - viewportWidth)
-    );
-    gameState.cameraY = Math.max(
-        0,
-        Math.min(gameState.cameraY, gameHeight - viewportHeight)
-    );
+    // Camera bounds - handle both larger and smaller maps
+    if (gameWidth <= viewportWidth) {
+        // Map fits in viewport horizontally: no scrolling needed
+        gameState.cameraX = 0;
+    } else {
+        // Map larger than viewport: clamp camera to map bounds
+        gameState.cameraX = Math.max(0, Math.min(gameState.cameraX, gameWidth - viewportWidth));
+    }
+
+    if (gameHeight <= viewportHeight) {
+        // Map fits in viewport vertically: no scrolling needed
+        gameState.cameraY = 0;
+    } else {
+        // Map larger than viewport: clamp camera to map bounds
+        gameState.cameraY = Math.max(0, Math.min(gameState.cameraY, gameHeight - viewportHeight));
+    }
 
     // Check for coin collection
     checkCoinCollection(
@@ -565,8 +578,8 @@ startGame();
 canvas.addEventListener("mousemove", (e) => {
     if (gameState.currentTurn === "player" && player.isActive) {
         const rect = canvas.getBoundingClientRect();
-        const offsetX = (canvas.width - gameWidth * ZOOM_LEVEL) / 2;
-        const offsetY = (canvas.height - gameHeight * ZOOM_LEVEL) / 2;
+        const offsetX = Math.max(0, (canvas.width - gameWidth * ZOOM_LEVEL) / 2);
+        const offsetY = Math.max(0, (canvas.height - gameHeight * ZOOM_LEVEL) / 2);
 
         // Adjust mouse coordinates to account for viewport centering and zoom
         gameState.mouseX =

@@ -3,8 +3,8 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "Overworld.tsx",
-    "automapping.whileDrawing": false,
+    "activeFile": "forrest-5.tmx",
+    "automapping.whileDrawing": true,
     "expandedProjectPaths": [
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
@@ -15,18 +15,40 @@
         ":/automap-tiles.tsx": {
             "scaleInDock": 1
         },
+        "C:/temp/test/Objects/Floor.tsx": {
+            "scaleInDock": 1
+        },
+        "C:/temp/test/Objects/map2.tmx": {
+            "scale": 0.74278125,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 799.6970844377129,
+                "y": 800.3702301316843
+            }
+        },
+        "C:/temp/test/Objects/map2.tmx#Floor": {
+            "scaleInDock": 1
+        },
+        "C:/temp/test/Objects/rules.tmx": {
+            "scale": 2,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 380,
+                "y": 271.75
+            }
+        },
         "Overworld.tsx": {
             "scaleInDock": 3,
-            "scaleInEditor": 5.5
+            "scaleInEditor": 2
         },
         "Rules/Overworld.tsx": {
             "scaleInDock": 1
         },
         "Rules/forrest_automapping.tmx": {
             "scale": 4,
-            "selectedLayer": 2,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 264.75,
+                "x": 256,
                 "y": 256.125
             }
         },
@@ -37,7 +59,7 @@
             "scale": 4,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 63.875,
+                "x": 55.75,
                 "y": 63.75
             }
         },
@@ -59,8 +81,8 @@
             "scale": 5.5,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 63.90909090909092,
-                "y": 64.00000000000001
+                "x": 64,
+                "y": 64.0909090909091
             }
         },
         "forrest-3.tmx": {
@@ -79,9 +101,9 @@
                 4
             ],
             "scale": 4,
-            "selectedLayer": 0,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 72.625,
+                "x": 72.5,
                 "y": 63.75
             }
         },
@@ -92,8 +114,8 @@
             "scale": 3,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 176.99999999999994,
-                "y": 127.99999999999999
+                "x": 122.99999999999999,
+                "y": 128.16666666666669
             }
         },
         "forrest_automapping.tmx": {
@@ -127,7 +149,7 @@
             }
         }
     },
-    "last.exportedFilePath": "C:/cursor_workspace/mini-medieval-ai/assets/maps",
+    "last.exportedFilePath": "C:/workspace/mini-medieval-ai/assets/maps",
     "last.externalTilesetPath": "C:/cursor_workspace/mini-medieval-ai/tiled",
     "last.imagePath": "C:/mini_medival_pack/Mini-Medieval-8x8",
     "lastUsedTilesetExportFilter": "JSON tileset files (*.tsj *.json)",
@@ -139,23 +161,24 @@
     "map.width": 16,
     "openFiles": [
         "Overworld.tsx",
-        "Rules/forrest_automapping.tmx",
-        "forrest-5.tmx"
+        "forrest-5.tmx",
+        "Rules/forrest_automapping.tmx"
     ],
     "project": "mini_medieval.tiled-project",
     "property.type": "string",
     "recentFiles": [
-        "forrest-5.tmx",
-        "Rules/forrest_automapping.tmx",
         "Overworld.tsx",
+        "Rules/forrest_automapping.tmx",
+        "forrest-5.tmx",
+        "C:/temp/test/Objects/rules.tmx",
+        "C:/temp/test/Objects/map2.tmx",
         "forrest-0.tmx",
-        "forrest_automapping.tmx",
         "forrest-4.tmx",
+        "forrest_automapping.tmx",
         "forrest-1.tmx",
         "forrest-2.tmx",
         "forrest-3.tmx",
-        "test-map-2.tmx",
-        "test-map.tmx"
+        "test-map-2.tmx"
     ],
     "tileset.lastUsedFilter": "Tiled tileset files (*.tsx *.xml)",
     "tileset.lastUsedFormat": "tsx",
