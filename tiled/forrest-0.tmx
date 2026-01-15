@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.11" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="16" height="16" tilewidth="8" tileheight="8" infinite="0" backgroundcolor="#7e9432" nextlayerid="5" nextobjectid="5">
+<map version="1.11" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="16" height="16" tilewidth="8" tileheight="8" infinite="0" backgroundcolor="#7e9432" nextlayerid="6" nextobjectid="5">
  <editorsettings>
   <export target="../assets/maps/forrest-0.json" format="json"/>
  </editorsettings>
@@ -24,6 +24,26 @@
 1258,1259,1260,0,0,939,939,0,0,0,0,0,0,1354,1355,0
 </data>
  </layer>
+ <layer id="5" name="Tile Layer 3" width="16" height="16">
+  <data encoding="csv">
+169,170,173,173,173,173,173,173,173,173,0,173,173,173,170,169,
+170,173,0,0,0,0,0,0,0,0,0,0,0,0,173,170,
+173,173,0,0,0,0,0,0,0,0,0,0,0,0,0,173,
+173,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+173,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,173,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+173,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+170,173,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
  <objectgroup id="4" name="Objects" class="objects">
   <object id="2" name="door2" type="door" x="120" y="48" width="8" height="8">
    <properties>
@@ -43,7 +63,7 @@
   </object>
   <object id="4" name="start" type="start" x="32" y="16" width="8" height="8"/>
  </objectgroup>
- <layer id="3" name="Collision" class="collision" width="16" height="16" opacity="0.6">
+ <layer id="3" name="Collision" class="collision" width="16" height="16" visible="0" opacity="0.6">
   <data encoding="csv">
 78,78,78,78,78,78,78,78,78,78,0,78,78,78,78,78,
 78,78,78,0,0,0,0,78,78,78,0,0,0,78,78,78,

@@ -124,7 +124,7 @@ function movePlayerToStartPos(targetObject = 'start') {
     }
 }
 
-function intializeCharacters(charactersLayer) {
+function intializeCharacters() {
 
     movePlayerToStartPos();
 
@@ -386,11 +386,9 @@ function draw() {
     // Clear the canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Fill canvas background with map's background color (visible outside map bounds)
-    if (gameMap && gameMap.backgroundcolor) {
-        ctx.fillStyle = gameMap.backgroundcolor;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-    }
+    // Fill canvas background (visible outside map bounds)
+    ctx.fillStyle = '#120e23';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     // Calculate the offset to center the game area (0 when map is larger than viewport)
     const offsetX = Math.max(0, (canvas.width - gameWidth * ZOOM_LEVEL) / 2);

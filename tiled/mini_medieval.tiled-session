@@ -48,19 +48,19 @@
             "scale": 4,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 256,
-                "y": 256.125
+                "x": 119.75,
+                "y": 75.125
             }
         },
         "forrest-0.tmx": {
             "expandedObjectLayers": [
                 4
             ],
-            "scale": 4,
-            "selectedLayer": 0,
+            "scale": 5.5,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 55.75,
-                "y": 63.75
+                "x": 59.63636363636365,
+                "y": 69.9090909090909
             }
         },
         "forrest-1.tmx": {
