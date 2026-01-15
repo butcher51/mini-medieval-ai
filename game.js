@@ -114,13 +114,6 @@ function movePlayerToTarget(targetObject) {
     }
 }
 
-function intializeCharacters() {
-    movePlayerToTarget();
-
-    // Initialize enemies
-    enemies = ENEMY_POSITIONS.map((pos) => new Enemy(pos.id, pos.x, pos.y, TILE_SIZE, TILE_SIZE));
-}
-
 // Calculate tile position in tileset
 function getTilePosition(tileIndex) {
     if (tileIndex === 0) return null; // Empty tile
@@ -453,14 +446,8 @@ async function startGame() {
 async function initialize(targetObject) {
     gameState = createGameState();
 
-    // Find collision layer
-    const charactersLayer = gameMap.layers.find((layer) => layer.class === "characters");
-    if (charactersLayer) {
-        intializeCharacters(charactersLayer);
-    } else {
-        player.initialize();
-        movePlayerToTarget(targetObject || "start");
-    }
+    player.initialize();
+    movePlayerToTarget(targetObject || "start");
 }
 
 // Add event listeners for mouse
@@ -811,7 +798,6 @@ function getDoorTarget(x, y) {
 }
 
 async function changeMap(target) {
-
     pause = true;
 
     // Save the new map name
@@ -820,13 +806,7 @@ async function changeMap(target) {
     // Reset game state
     gameState = createGameState();
 
-    // Clear enemies array
-    enemies = [];
-
-    // Reset player state but keep health
-    const playerHealth = player.health;
-    player.reset();
-    player.health = playerHealth;
+    gameMapAnimationIndexes = null;
 
     // Load new map
     await loadMap(target.targetMap);
