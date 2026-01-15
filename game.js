@@ -2,15 +2,7 @@ import { findPath, isPathInRange } from "./astar.js";
 import { Player } from "./Player.js";
 import { Enemy } from "./Enemy.js";
 import { AnimationController } from "./AnimationController.js";
-import {
-    ZOOM_LEVEL,
-    BASE_TILE_SIZE,
-    TILE_SIZE,
-    PLAYER_MOVE_POINTS,
-    ENEMY_POSITIONS,
-    MOVEMENT_STEP_DELAY,
-    INITAL_MAP,
-} from "./constants.js";
+import { ZOOM_LEVEL, BASE_TILE_SIZE, TILE_SIZE, PLAYER_MOVE_POINTS, ENEMY_POSITIONS, MOVEMENT_STEP_DELAY, INITAL_MAP } from "./constants.js";
 import { createGameState } from "./gameState.js";
 import { saveManager } from "./SaveManager.js";
 
@@ -53,6 +45,7 @@ let iconsData = null;
 let tilesetData = null;
 let collisionLayer = null;
 let objectsLayer = null;
+let pause = false;
 
 async function loadUI() {
     iconsImage = await loadImage("assets/icons.png");
@@ -65,9 +58,7 @@ async function loadMap(mapName) {
         const response = await fetch(`assets/maps/${mapName}.json`);
         gameMap = await response.json();
 
-        const animationsResponse = await fetch(
-            `assets/maps/map-animations.json`
-        );
+        const animationsResponse = await fetch(`assets/maps/map-animations.json`);
         gameMapAnimations = await animationsResponse.json();
 
         // Set map dimensions
@@ -79,28 +70,20 @@ async function loadMap(mapName) {
         gameHeight = MAP_HEIGHT * TILE_SIZE;
 
         // Find collision layer
-        collisionLayer = gameMap.layers.find(
-            (layer) => layer.class === "collision"
-        );
+        collisionLayer = gameMap.layers.find((layer) => layer.class === "collision");
         if (!collisionLayer) {
             throw new Error("No collision layer found in map data");
         }
 
         // Find object layer
-        objectsLayer = gameMap.layers.find(
-            (layer) => layer.class === "objects"
-        );
+        objectsLayer = gameMap.layers.find((layer) => layer.class === "objects");
         if (!objectsLayer) {
             throw new Error("No objects layer found in map data");
         }
 
         // Load tileset
         const tilesetSource = gameMap.tilesets[0].source;
-        const tilesetName = tilesetSource
-            .split("/")
-            .pop()
-            .replace(".tsx", "")
-            .toLowerCase();
+        const tilesetName = tilesetSource.split("/").pop().replace(".tsx", "").toLowerCase();
 
         // Load tileset data
         const tilesetResponse = await fetch(`assets/${tilesetName}.json`);
@@ -113,11 +96,17 @@ async function loadMap(mapName) {
     }
 }
 
-function movePlayerToStartPos(targetObject = 'start') {
+/**
+ * @param {string} targetObject
+ */
+function movePlayerToTarget(targetObject) {
+    if (!targetObject) {
+        return;
+    }
 
     // Find start position from objects layer
-    const startObject = objectsLayer.objects.find(obj => obj.name === targetObject);
-        
+    const startObject = objectsLayer.objects.find((obj) => obj.name === targetObject);
+
     if (startObject) {
         // Initialize player at start position, converting pixel coordinates to tile coordinates
         player.x = Math.floor(startObject.x / BASE_TILE_SIZE) * BASE_TILE_SIZE;
@@ -126,13 +115,10 @@ function movePlayerToStartPos(targetObject = 'start') {
 }
 
 function intializeCharacters() {
-
-    movePlayerToStartPos();
+    movePlayerToTarget();
 
     // Initialize enemies
-    enemies = ENEMY_POSITIONS.map(
-        (pos) => new Enemy(pos.id, pos.x, pos.y, TILE_SIZE, TILE_SIZE)
-    );
+    enemies = ENEMY_POSITIONS.map((pos) => new Enemy(pos.id, pos.x, pos.y, TILE_SIZE, TILE_SIZE));
 }
 
 // Calculate tile position in tileset
@@ -151,18 +137,10 @@ function getTilePosition(tileIndex) {
 }
 
 // Player object
-const player = new Player(
-    "It's me",
-    TILE_SIZE * 2,
-    TILE_SIZE * 2,
-    TILE_SIZE,
-    TILE_SIZE
-);
+const player = new Player("It's me", TILE_SIZE * 2, TILE_SIZE * 2, TILE_SIZE, TILE_SIZE);
 
 // Game objects (enemies)
-let enemies = ENEMY_POSITIONS.map(
-    (pos) => new Enemy(pos.id, pos.x, pos.y, TILE_SIZE, TILE_SIZE)
-);
+let enemies = ENEMY_POSITIONS.map((pos) => new Enemy(pos.id, pos.x, pos.y, TILE_SIZE, TILE_SIZE));
 
 // Game state
 let gameState = createGameState();
@@ -187,17 +165,7 @@ function drawObject(object, x, y) {
         if (iconProp && iconProp.value) {
             const iconData = iconsData[iconProp.value];
             if (iconData) {
-                ctx.drawImage(
-                    iconsImage,
-                    iconData.x,
-                    iconData.y,
-                    BASE_TILE_SIZE,
-                    BASE_TILE_SIZE,
-                    x,
-                    y,
-                    BASE_TILE_SIZE,
-                    BASE_TILE_SIZE
-                );
+                ctx.drawImage(iconsImage, iconData.x, iconData.y, BASE_TILE_SIZE, BASE_TILE_SIZE, x, y, BASE_TILE_SIZE, BASE_TILE_SIZE);
             }
         } else {
             ctx.fillStyle = "rgba(255, 0, 0, 0.5)";
@@ -224,9 +192,7 @@ function drawMapLayers() {
     }
 
     if (!gameMapAnimationIndexes) {
-        gameMapAnimationIndexes = Array.from({ length: MAP_HEIGHT }, () =>
-            Array(MAP_WIDTH).fill(null)
-        );
+        gameMapAnimationIndexes = Array.from({ length: MAP_HEIGHT }, () => Array(MAP_WIDTH).fill(null));
     }
 
     let animationIndex, tileIndex, animation;
@@ -257,11 +223,7 @@ function drawMapLayers() {
                 if (animation) {
                     animationIndex = gameMapAnimationIndexes[y][x];
                     if (animationIndex !== null) {
-                        tileIndex =
-                            animationIndex.frames[
-                            animationIndex.currentFrame +
-                            (now % animationIndex.length)
-                            ];
+                        tileIndex = animationIndex.frames[animationIndex.currentFrame + (now % animationIndex.length)];
                     } else {
                         gameMapAnimationIndexes[y][x] = {
                             length: animation.length,
@@ -277,17 +239,7 @@ function drawMapLayers() {
                 const xPos = x * BASE_TILE_SIZE;
                 const yPos = y * BASE_TILE_SIZE;
 
-                ctx.drawImage(
-                    tilesetImage,
-                    pos.x,
-                    pos.y,
-                    BASE_TILE_SIZE,
-                    BASE_TILE_SIZE,
-                    xPos,
-                    yPos,
-                    BASE_TILE_SIZE,
-                    BASE_TILE_SIZE
-                );
+                ctx.drawImage(tilesetImage, pos.x, pos.y, BASE_TILE_SIZE, BASE_TILE_SIZE, xPos, yPos, BASE_TILE_SIZE, BASE_TILE_SIZE);
             }
         }
     });
@@ -301,22 +253,14 @@ function drawPath(path, baseTileSize) {
 
     if (!gameState.isMoving) {
         // Draw solid line only when selecting target
-        ctx.strokeStyle = isPathInRange(path, player.movePoints)
-            ? "rgba(0, 255, 0, 0.5)"
-            : "rgba(255, 0, 0, 0.5)";
+        ctx.strokeStyle = isPathInRange(path, player.movePoints) ? "rgba(0, 255, 0, 0.5)" : "rgba(255, 0, 0, 0.5)";
         ctx.lineWidth = 2;
         ctx.beginPath();
         path.forEach((point, index) => {
             if (index === 0) {
-                ctx.moveTo(
-                    point.x * baseTileSize + baseTileSize / 2,
-                    point.y * baseTileSize + baseTileSize / 2
-                );
+                ctx.moveTo(point.x * baseTileSize + baseTileSize / 2, point.y * baseTileSize + baseTileSize / 2);
             } else {
-                ctx.lineTo(
-                    point.x * baseTileSize + baseTileSize / 2,
-                    point.y * baseTileSize + baseTileSize / 2
-                );
+                ctx.lineTo(point.x * baseTileSize + baseTileSize / 2, point.y * baseTileSize + baseTileSize / 2);
             }
         });
         ctx.stroke();
@@ -327,9 +271,7 @@ function drawPath(path, baseTileSize) {
         // Find the current position in the path
         const currentTileX = Math.floor(player.x / baseTileSize);
         const currentTileY = Math.floor(player.y / baseTileSize);
-        const currentPathIndex = path.findIndex(
-            (point) => point.x === currentTileX && point.y === currentTileY
-        );
+        const currentPathIndex = path.findIndex((point) => point.x === currentTileX && point.y === currentTileY);
 
         // Only draw indicators for remaining path points
         if (currentPathIndex !== -1) {
@@ -337,12 +279,7 @@ function drawPath(path, baseTileSize) {
                 const point = path[i];
                 const x = point.x * baseTileSize + baseTileSize / 4;
                 const y = point.y * baseTileSize + baseTileSize / 4;
-                ctx.fillRect(
-                    x,
-                    y + baseTileSize / 4,
-                    baseTileSize / 4,
-                    baseTileSize / 4
-                );
+                ctx.fillRect(x, y + baseTileSize / 4, baseTileSize / 4, baseTileSize / 4);
             }
         }
     }
@@ -364,7 +301,7 @@ function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Fill canvas background (visible outside map bounds)
-    ctx.fillStyle = '#120e23';
+    ctx.fillStyle = "#120e23";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     // Calculate the offset to center the game area (0 when map is larger than viewport)
@@ -391,32 +328,12 @@ function draw() {
             // Draw hovered tile only when not moving and selecting target
             const hoveredTileX = gameState.hoveredTile.x * BASE_TILE_SIZE;
             const hoveredTileY = gameState.hoveredTile.y * BASE_TILE_SIZE;
-            if (
-                gameState.hoveredTile.x >= 0 &&
-                gameState.hoveredTile.x < MAP_WIDTH &&
-                gameState.hoveredTile.y >= 0 &&
-                gameState.hoveredTile.y < MAP_HEIGHT
-            ) {
-                ctx.strokeStyle = isPathInRange(
-                    gameState.currentPath,
-                    player.movePoints
-                )
-                    ? "rgba(0, 255, 0, 0.5)"
-                    : "rgba(255, 0, 0, 0.5)";
-                ctx.strokeRect(
-                    hoveredTileX,
-                    hoveredTileY,
-                    BASE_TILE_SIZE,
-                    BASE_TILE_SIZE
-                );
+            if (gameState.hoveredTile.x >= 0 && gameState.hoveredTile.x < MAP_WIDTH && gameState.hoveredTile.y >= 0 && gameState.hoveredTile.y < MAP_HEIGHT) {
+                ctx.strokeStyle = isPathInRange(gameState.currentPath, player.movePoints) ? "rgba(0, 255, 0, 0.5)" : "rgba(255, 0, 0, 0.5)";
+                ctx.strokeRect(hoveredTileX, hoveredTileY, BASE_TILE_SIZE, BASE_TILE_SIZE);
                 if (gameState.hoveredTile.attack) {
                     ctx.fillStyle = "rgba(255, 0, 0, 0.5)";
-                    ctx.fillRect(
-                        hoveredTileX,
-                        hoveredTileY,
-                        BASE_TILE_SIZE,
-                        BASE_TILE_SIZE
-                    );
+                    ctx.fillRect(hoveredTileX, hoveredTileY, BASE_TILE_SIZE, BASE_TILE_SIZE);
                 }
             }
         }
@@ -452,12 +369,7 @@ function draw() {
 
         // Draw button background
         ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
-        ctx.fillRect(
-            gameState.skipButton.x,
-            gameState.skipButton.y,
-            gameState.skipButton.width,
-            gameState.skipButton.height
-        );
+        ctx.fillRect(gameState.skipButton.x, gameState.skipButton.y, gameState.skipButton.width, gameState.skipButton.height);
 
         // Draw button text
         ctx.fillStyle = "white";
@@ -499,14 +411,16 @@ function gameLoop(timestamp) {
     const deltaTime = timestamp - lastTime;
     lastTime = timestamp;
 
-    // Clear the canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (!pause) {
+        // Clear the canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Update game logic
-    update(deltaTime);
+        // Update game logic
+        update(deltaTime);
 
-    // Draw the game layers
-    draw();
+        // Draw the game layers
+        draw();
+    }
 
     // Request next frame
     requestAnimationFrame(gameLoop);
@@ -540,19 +454,14 @@ async function initialize(targetObject) {
     gameState = createGameState();
 
     // Find collision layer
-    const charactersLayer = gameMap.layers.find(
-        (layer) => layer.class === "characters"
-    );
+    const charactersLayer = gameMap.layers.find((layer) => layer.class === "characters");
     if (charactersLayer) {
         intializeCharacters(charactersLayer);
     } else {
         player.initialize();
-        movePlayerToStartPos(targetObject);
+        movePlayerToTarget(targetObject || "start");
     }
 }
-
-// Initialize the game
-startGame();
 
 // Add event listeners for mouse
 canvas.addEventListener("mousemove", (e) => {
@@ -562,31 +471,20 @@ canvas.addEventListener("mousemove", (e) => {
         const offsetY = Math.max(0, (canvas.height - gameHeight * ZOOM_LEVEL) / 2);
 
         // Adjust mouse coordinates to account for viewport centering and zoom
-        gameState.mouseX =
-            (e.clientX - rect.left - offsetX) / ZOOM_LEVEL + gameState.cameraX;
-        gameState.mouseY =
-            (e.clientY - rect.top - offsetY) / ZOOM_LEVEL + gameState.cameraY;
+        gameState.mouseX = (e.clientX - rect.left - offsetX) / ZOOM_LEVEL + gameState.cameraX;
+        gameState.mouseY = (e.clientY - rect.top - offsetY) / ZOOM_LEVEL + gameState.cameraY;
 
         // Calculate hovered tile
         const tileX = Math.floor(gameState.mouseX / BASE_TILE_SIZE);
         const tileY = Math.floor(gameState.mouseY / BASE_TILE_SIZE);
 
-        if (
-            tileX !== gameState.hoveredTile.x ||
-            tileY !== gameState.hoveredTile.y
-        ) {
+        if (tileX !== gameState.hoveredTile.x || tileY !== gameState.hoveredTile.y) {
             const attack = isEnemyTile(tileX, tileY);
             gameState.hoveredTile = { x: tileX, y: tileY, attack };
             // Calculate path to hovered tile
             const playerTileX = Math.floor(player.x / BASE_TILE_SIZE);
             const playerTileY = Math.floor(player.y / BASE_TILE_SIZE);
-            gameState.currentPath = findPath(
-                playerTileX,
-                playerTileY,
-                tileX,
-                tileY,
-                attack ? isAttackWalkable : isWalkable
-            );
+            gameState.currentPath = findPath(playerTileX, playerTileY, tileX, tileY, attack ? isAttackWalkable : isWalkable);
         }
     }
 });
@@ -639,9 +537,9 @@ canvas.addEventListener("click", async (e) => {
     ) {
         // Add skip turn to history
         gameState.turnHistory.push({
-            character: 'player',
-            action: 'skip_turn',
-            timestamp: Date.now()
+            character: "player",
+            action: "skip_turn",
+            timestamp: Date.now(),
         });
 
         gameState.currentPath = null;
@@ -658,23 +556,20 @@ canvas.addEventListener("click", async (e) => {
     const clickedTileY = gameState.hoveredTile.y;
 
     const targetEnemy = enemies.find(
-        (enemy) =>
-            enemy.isActive &&
-            Math.floor(enemy.x / BASE_TILE_SIZE) === clickedTileX &&
-            Math.floor(enemy.y / BASE_TILE_SIZE) === clickedTileY
+        (enemy) => enemy.isActive && Math.floor(enemy.x / BASE_TILE_SIZE) === clickedTileX && Math.floor(enemy.y / BASE_TILE_SIZE) === clickedTileY
     );
 
     if (targetEnemy && player.isAdjacent(targetEnemy, BASE_TILE_SIZE)) {
         // Attack the enemy
         await attack({ attacker: player, defender: targetEnemy });
-        
+
         // Add attack to history
         gameState.turnHistory.push({
-            character: 'player',
-            action: 'attack',
+            character: "player",
+            action: "attack",
             target: targetEnemy.id,
             position: { x: clickedTileX, y: clickedTileY },
-            timestamp: Date.now()
+            timestamp: Date.now(),
         });
 
         // Reset path and hover highlight after attack
@@ -714,10 +609,10 @@ canvas.addEventListener("click", async (e) => {
 
         // Add movement to history
         gameState.turnHistory.push({
-            character: 'player',
-            action: 'move',
-            path: movementPath.map(p => ({ x: p.x, y: p.y })),
-            timestamp: Date.now()
+            character: "player",
+            action: "move",
+            path: movementPath.map((p) => ({ x: p.x, y: p.y })),
+            timestamp: Date.now(),
         });
 
         // Check if player is on a door tile
@@ -727,19 +622,17 @@ canvas.addEventListener("click", async (e) => {
                 changeMap(target);
 
                 gameState.turnHistory.push({
-                    character: 'player',
-                    action: 'exit',
+                    character: "player",
+                    action: "exit",
                     position: { x: Math.floor(player.x / BASE_TILE_SIZE), y: Math.floor(player.y / BASE_TILE_SIZE) },
                     timestamp: Date.now(),
-                    target
+                    target,
                 });
-            
             }
         }
 
         // End turn immediately after movement
         endPlayerTurn();
-
     }
 });
 
@@ -754,13 +647,7 @@ async function processEnemyTurn() {
         const playerTileX = Math.floor(player.x / BASE_TILE_SIZE);
         const playerTileY = Math.floor(player.y / BASE_TILE_SIZE);
 
-        const pathToPlayer = findPath(
-            enemyTileX,
-            enemyTileY,
-            playerTileX,
-            playerTileY,
-            isWalkable
-        );
+        const pathToPlayer = findPath(enemyTileX, enemyTileY, playerTileX, playerTileY, isWalkable);
 
         if (!pathToPlayer) continue; // No path to player
 
@@ -770,10 +657,10 @@ async function processEnemyTurn() {
             // Add enemy attack to history
             gameState.turnHistory.push({
                 character: enemy.id,
-                action: 'attack',
-                target: 'player',
+                action: "attack",
+                target: "player",
                 position: { x: enemyTileX, y: enemyTileY },
-                timestamp: Date.now()
+                timestamp: Date.now(),
             });
             continue;
         }
@@ -781,10 +668,7 @@ async function processEnemyTurn() {
         // Otherwise, move towards player
         if (pathToPlayer.length > 1) {
             // First point is current position
-            const moveDistance = Math.min(
-                enemy.movePoints,
-                pathToPlayer.length - 1
-            );
+            const moveDistance = Math.min(enemy.movePoints, pathToPlayer.length - 1);
             const path = pathToPlayer.slice(0, moveDistance + 1);
             const targetPos = path[path.length - 1];
 
@@ -797,9 +681,9 @@ async function processEnemyTurn() {
             // Add enemy movement to history
             gameState.turnHistory.push({
                 character: enemy.id,
-                action: 'move',
-                path: path.map(p => ({ x: p.x, y: p.y })),
-                timestamp: Date.now()
+                action: "move",
+                path: path.map((p) => ({ x: p.x, y: p.y })),
+                timestamp: Date.now(),
             });
 
             await delay(500); // Delay before attacking
@@ -809,10 +693,10 @@ async function processEnemyTurn() {
                 // Add enemy attack to history
                 gameState.turnHistory.push({
                     character: enemy.id,
-                    action: 'attack',
-                    target: 'player',
+                    action: "attack",
+                    target: "player",
                     position: { x: Math.floor(enemy.x / BASE_TILE_SIZE), y: Math.floor(enemy.y / BASE_TILE_SIZE) },
-                    timestamp: Date.now()
+                    timestamp: Date.now(),
                 });
                 continue;
             }
@@ -845,10 +729,10 @@ async function attack({ attacker, defender }) {
 async function endPlayerTurn() {
     // Add player's turn to history
     gameState.turnHistory.push({
-        character: 'player',
-        action: 'end_turn',
+        character: "player",
+        action: "end_turn",
         position: { x: Math.floor(player.x / BASE_TILE_SIZE), y: Math.floor(player.y / BASE_TILE_SIZE) },
-        timestamp: Date.now()
+        timestamp: Date.now(),
     });
 
     gameState.currentTurn = "enemies";
@@ -871,19 +755,11 @@ function isAttackWalkable(x, y) {
 }
 
 function isEnemyTile(x, y) {
-    return enemies.some(
-        (enemy) =>
-            enemy.isActive &&
-            Math.floor(enemy.x / BASE_TILE_SIZE) === x &&
-            Math.floor(enemy.y / BASE_TILE_SIZE) === y
-    );
+    return enemies.some((enemy) => enemy.isActive && Math.floor(enemy.x / BASE_TILE_SIZE) === x && Math.floor(enemy.y / BASE_TILE_SIZE) === y);
 }
 
 function isPlayerTile(x, y) {
-    return (
-        Math.floor(player.x / BASE_TILE_SIZE) === x &&
-        Math.floor(player.y / BASE_TILE_SIZE) === y
-    );
+    return Math.floor(player.x / BASE_TILE_SIZE) === x && Math.floor(player.y / BASE_TILE_SIZE) === y;
 }
 
 async function loadImage(imageSrc) {
@@ -911,12 +787,7 @@ function isDoorTile(x, y) {
         const doorTileX = Math.floor(door.x / BASE_TILE_SIZE);
         const doorTileY = Math.floor(door.y / BASE_TILE_SIZE);
 
-        return (
-            doorTileX === tileX &&
-            doorTileY === tileY &&
-            door.type === "door" &&
-            !door.properties.find((prop) => prop.name === "Closed")?.value
-        );
+        return doorTileX === tileX && doorTileY === tileY && door.type === "door" && !door.properties.find((prop) => prop.name === "Closed")?.value;
     });
 }
 
@@ -930,27 +801,24 @@ function getDoorTarget(x, y) {
         const doorTileX = Math.floor(door.x / BASE_TILE_SIZE);
         const doorTileY = Math.floor(door.y / BASE_TILE_SIZE);
 
-        return (
-            doorTileX === tileX &&
-            doorTileY === tileY &&
-            door.type === "door" &&
-            !door.properties.find((prop) => prop.name === "Closed")?.value
-        );
+        return doorTileX === tileX && doorTileY === tileY && door.type === "door" && !door.properties.find((prop) => prop.name === "Closed")?.value;
     });
 
-    return ({
+    return {
         targetMap: door?.properties.find((prop) => prop.name === "target-map")?.value || null,
-        targetObject: door?.properties.find((prop) => prop.name === "target-object")?.value || null
-    });
+        targetObject: door?.properties.find((prop) => prop.name === "target-object")?.value || null,
+    };
 }
 
 async function changeMap(target) {
+
+    pause = true;
+
     // Save the new map name
     saveManager.setCurrentMap(target);
 
     // Reset game state
     gameState = createGameState();
-    gameMapAnimationIndexes = null;
 
     // Clear enemies array
     enemies = [];
@@ -964,4 +832,9 @@ async function changeMap(target) {
     await loadMap(target.targetMap);
 
     initialize(target.targetObject);
+
+    pause = false;
 }
+
+// Initialize the game
+startGame();
