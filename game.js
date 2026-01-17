@@ -46,7 +46,6 @@ let iconsData = null;
 let tilesetData = null;
 let collisionLayer = null;
 let objectsLayer = null;
-let pause = false;
 
 async function loadUI() {
     iconsImage = await loadImage("assets/icons.png");
@@ -59,7 +58,7 @@ async function loadMap(mapName) {
         const response = await fetch(`assets/maps/${mapName}.json`);
         gameMap = await response.json();
 
-        const animationsResponse = await fetch(`assets/maps/map-animations.json`);
+        const animationsResponse = await fetch("assets/maps/map-animations.json");
         gameMapAnimations = await animationsResponse.json();
 
         // Set map dimensions
@@ -119,7 +118,9 @@ function movePlayerToTarget(targetObject) {
 
 // Calculate tile position in tileset
 function getTilePosition(tileIndex) {
-    if (tileIndex === 0) return null; // Empty tile
+    if (tileIndex === 0) {
+        return null;
+    } // Empty tile
 
     tileIndex--; // Convert to 0-based index
     const tilesPerRow = Math.floor(tilesetData.imagewidth / BASE_TILE_SIZE);
@@ -136,13 +137,15 @@ function getTilePosition(tileIndex) {
 const player = new Player("It's me", TILE_SIZE * 2, TILE_SIZE * 2, TILE_SIZE, TILE_SIZE);
 
 // Game objects (enemies)
-let enemies = ENEMY_POSITIONS.map((pos) => new Enemy(pos.id, pos.x, pos.y, TILE_SIZE, TILE_SIZE));
+const enemies = ENEMY_POSITIONS.map((pos) => new Enemy(pos.id, pos.x, pos.y, TILE_SIZE, TILE_SIZE));
 
 // Game state
 let gameState = createGameState();
 
 function isTileCollidable(x, y) {
-    if (!collisionLayer) return false;
+    if (!collisionLayer) {
+        return false;
+    }
 
     const tileX = Math.floor(x / BASE_TILE_SIZE);
     const tileY = Math.floor(y / BASE_TILE_SIZE);
@@ -172,8 +175,12 @@ function drawObject(object, x, y) {
 
 // Draw map layers
 function drawMapLayers() {
-    if (!gameMap || !tilesetImage || !tilesetData) return;
-    if (!tilesetImage.complete) return; // Make sure image is fully loaded
+    if (!gameMap || !tilesetImage || !tilesetData) {
+        return;
+    }
+    if (!tilesetImage.complete) {
+        return;
+    } // Make sure image is fully loaded
 
     // Disable image smoothing for crisp pixel art
     ctx.imageSmoothingEnabled = false;
@@ -192,8 +199,12 @@ function drawMapLayers() {
 
     // Draw each visible layer
     gameMap.layers.forEach((layer) => {
-        if (layer.class === "collision") return; // Skip collision layer
-        if (!layer.visible) return;
+        if (layer.class === "collision") {
+            return;
+        } // Skip collision layer
+        if (!layer.visible) {
+            return;
+        }
 
         if (layer.class === "objects") {
             layer.objects.forEach((object) => {
@@ -205,7 +216,9 @@ function drawMapLayers() {
         for (let y = 0; y < layer.height; y++) {
             for (let x = 0; x < layer.width; x++) {
                 tileIndex = layer.data[y * layer.width + x];
-                if (tileIndex === 0) continue; // Skip empty tiles
+                if (tileIndex === 0) {
+                    continue;
+                } // Skip empty tiles
 
                 animation = gameMapAnimations["" + tileIndex];
                 if (animation) {
@@ -222,7 +235,9 @@ function drawMapLayers() {
                 }
 
                 const pos = getTilePosition(tileIndex);
-                if (!pos) continue;
+                if (!pos) {
+                    continue;
+                }
 
                 const xPos = x * BASE_TILE_SIZE;
                 const yPos = y * BASE_TILE_SIZE;
@@ -235,7 +250,9 @@ function drawMapLayers() {
 
 // Draw path visualization
 function drawPath(path, baseTileSize) {
-    if (!path || path.length < 2) return;
+    if (!path || path.length < 2) {
+        return;
+    }
 
     ctx.save();
 
@@ -399,16 +416,14 @@ function gameLoop(timestamp) {
     const deltaTime = timestamp - lastTime;
     lastTime = timestamp;
 
-    if (!pause) {
-        // Clear the canvas
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // Clear the canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Update game logic
-        update(deltaTime);
+    // Update game logic
+    update(deltaTime);
 
-        // Draw the game layers
-        draw();
-    }
+    // Draw the game layers
+    draw();
 
     // Request next frame
     requestAnimationFrame(gameLoop);
@@ -503,7 +518,9 @@ async function moveCharacterAlongPath(character, path, baseTileSize) {
 
 // Modify the click handler to include history for player actions
 canvas.addEventListener("click", async (e) => {
-    if (gameState.currentTurn !== "player" || gameState.isMoving) return;
+    if (gameState.currentTurn !== "player" || gameState.isMoving) {
+        return;
+    }
 
     const rect = canvas.getBoundingClientRect();
     const clickX = e.clientX - rect.left;
@@ -531,14 +548,16 @@ canvas.addEventListener("click", async (e) => {
     }
 
     // Don't process game world clicks if there's no path
-    if (!gameState.currentPath) return;
+    if (!gameState.currentPath) {
+        return;
+    }
 
     // Check if we're trying to attack an enemy
     const clickedTileX = gameState.hoveredTile.x;
     const clickedTileY = gameState.hoveredTile.y;
 
     const targetEnemy = enemies.find(
-        (enemy) => enemy.isActive && Math.floor(enemy.x / BASE_TILE_SIZE) === clickedTileX && Math.floor(enemy.y / BASE_TILE_SIZE) === clickedTileY
+        (enemy) => enemy.isActive && Math.floor(enemy.x / BASE_TILE_SIZE) === clickedTileX && Math.floor(enemy.y / BASE_TILE_SIZE) === clickedTileY,
     );
 
     if (targetEnemy && player.isAdjacent(targetEnemy, BASE_TILE_SIZE)) {
@@ -621,7 +640,9 @@ canvas.addEventListener("click", async (e) => {
 async function processEnemyTurn() {
     // Process each enemy's turn
     for (const enemy of enemies) {
-        if (!enemy.isActive) continue; // Skip dead enemies
+        if (!enemy.isActive) {
+            continue;
+        } // Skip dead enemies
 
         // Calculate path to player
         const enemyTileX = Math.floor(enemy.x / BASE_TILE_SIZE);
@@ -631,7 +652,9 @@ async function processEnemyTurn() {
 
         const pathToPlayer = findPath(enemyTileX, enemyTileY, playerTileX, playerTileY, isWalkable);
 
-        if (!pathToPlayer) continue; // No path to player
+        if (!pathToPlayer) {
+            continue;
+        } // No path to player
 
         // If adjacent to player, attack
         if (enemy.isAdjacent(player, BASE_TILE_SIZE)) {
@@ -756,11 +779,13 @@ async function loadImage(imageSrc) {
 }
 
 async function delay(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+    return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
 
 function isDoorTile(x, y) {
-    if (!objectsLayer || !objectsLayer.objects) return false;
+    if (!objectsLayer || !objectsLayer.objects) {
+        return false;
+    }
 
     const tileX = Math.floor(x / BASE_TILE_SIZE);
     const tileY = Math.floor(y / BASE_TILE_SIZE);
@@ -774,7 +799,9 @@ function isDoorTile(x, y) {
 }
 
 function getDoorTarget(x, y) {
-    if (!objectsLayer || !objectsLayer.objects) return null;
+    if (!objectsLayer || !objectsLayer.objects) {
+        return null;
+    }
 
     const tileX = Math.floor(x / BASE_TILE_SIZE);
     const tileY = Math.floor(y / BASE_TILE_SIZE);
@@ -793,7 +820,6 @@ function getDoorTarget(x, y) {
 }
 
 async function changeMap(target) {
-    pause = true;
 
     // Save the new map name
     saveManager.setCurrentMap(target);
@@ -805,8 +831,6 @@ async function changeMap(target) {
     await loadMap(target.targetMap);
 
     initialize(target.targetObject);
-
-    pause = false;
 }
 
 startGame();

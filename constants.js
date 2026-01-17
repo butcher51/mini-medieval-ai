@@ -29,7 +29,7 @@ export const ENEMY_POSITIONS = [
     // { id: 'feri', x: TILE_SIZE * 15, y: TILE_SIZE * 3 }
 ]; 
 
-export const INITAL_MAP = 'forrest-0';
+export const INITAL_MAP = "forrest-0";
 
 // Save system version - increment when save format changes
-export const SAVE_VERSION = 14;
+export const SAVE_VERSION = 15;
