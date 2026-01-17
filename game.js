@@ -779,7 +779,7 @@ async function loadImage(imageSrc) {
 }
 
 async function delay(ms) {
-    return new Promise((resolve) => window.setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function isDoorTile(x, y) {

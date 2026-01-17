@@ -14,6 +14,8 @@ export default [
                 Image: "readonly",
                 localStorage: "readonly",
                 fetch: "readonly",
+                setTimeout: "readonly",
+                clearTimeout: "readonly",
                 // Node globals (for server.js)
                 process: "readonly",
                 __dirname: "readonly",
