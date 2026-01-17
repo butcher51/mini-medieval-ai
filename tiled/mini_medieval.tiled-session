@@ -6,6 +6,7 @@
     "activeFile": "forrest-5.tmx",
     "automapping.whileDrawing": true,
     "expandedProjectPaths": [
+        "."
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
@@ -112,7 +113,7 @@
                 4
             ],
             "scale": 4,
-            "selectedLayer": 1,
+            "selectedLayer": 0,
             "viewCenter": {
                 "x": 133.5,
                 "y": 183.125
@@ -162,22 +163,27 @@
     "openFiles": [
         "Overworld.tsx",
         "forrest-5.tmx",
-        "Rules/forrest_automapping.tmx"
+        "Rules/forrest_automapping.tmx",
+        "forrest-2.tmx",
+        "forrest-0.tmx",
+        "forrest-1.tmx",
+        "forrest-3.tmx",
+        "forrest-4.tmx"
     ],
     "project": "mini_medieval.tiled-project",
     "property.type": "string",
     "recentFiles": [
         "Overworld.tsx",
+        "forrest-4.tmx",
+        "forrest-3.tmx",
+        "forrest-1.tmx",
+        "forrest-0.tmx",
+        "forrest-2.tmx",
         "Rules/forrest_automapping.tmx",
         "forrest-5.tmx",
         "C:/temp/test/Objects/rules.tmx",
         "C:/temp/test/Objects/map2.tmx",
-        "forrest-0.tmx",
-        "forrest-4.tmx",
         "forrest_automapping.tmx",
-        "forrest-1.tmx",
-        "forrest-2.tmx",
-        "forrest-3.tmx",
         "test-map-2.tmx"
     ],
     "tileset.lastUsedFilter": "Tiled tileset files (*.tsx *.xml)",

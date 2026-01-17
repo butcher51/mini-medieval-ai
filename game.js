@@ -5,6 +5,7 @@ import { AnimationController } from "./AnimationController.js";
 import { ZOOM_LEVEL, BASE_TILE_SIZE, TILE_SIZE, PLAYER_MOVE_POINTS, ENEMY_POSITIONS, MOVEMENT_STEP_DELAY, INITAL_MAP } from "./constants.js";
 import { createGameState } from "./gameState.js";
 import { saveManager } from "./SaveManager.js";
+import { initZoomPrevention } from "./zoomPrevention.js";
 
 // Get the canvas context
 const canvas = document.getElementById("gameCanvas");
@@ -64,6 +65,8 @@ async function loadMap(mapName) {
         // Set map dimensions
         MAP_WIDTH = gameMap.width;
         MAP_HEIGHT = gameMap.height;
+
+        gameMapAnimationIndexes = Array.from({ length: MAP_HEIGHT }, () => Array(MAP_WIDTH).fill(null));
 
         // Calculate the game area size
         gameWidth = MAP_WIDTH * TILE_SIZE;
@@ -184,10 +187,6 @@ function drawMapLayers() {
         ctx.fillRect(0, 0, gameWidth, gameHeight);
     }
 
-    if (!gameMapAnimationIndexes) {
-        gameMapAnimationIndexes = Array.from({ length: MAP_HEIGHT }, () => Array(MAP_WIDTH).fill(null));
-    }
-
     let animationIndex, tileIndex, animation;
     const now = Math.floor(Date.now() / 600);
 
@@ -197,12 +196,8 @@ function drawMapLayers() {
         if (!layer.visible) return;
 
         if (layer.class === "objects") {
-            let x,
-                y = 0;
             layer.objects.forEach((object) => {
-                x = (object.x / BASE_TILE_SIZE) * ZOOM_LEVEL * 2;
-                y = (object.y / BASE_TILE_SIZE) * ZOOM_LEVEL * 2;
-                drawObject(object, x, y);
+                drawObject(object, object.x, object.y);
             });
             return;
         }
@@ -806,8 +801,6 @@ async function changeMap(target) {
     // Reset game state
     gameState = createGameState();
 
-    gameMapAnimationIndexes = null;
-
     // Load new map
     await loadMap(target.targetMap);
 
@@ -816,5 +809,7 @@ async function changeMap(target) {
     pause = false;
 }
 
-// Initialize the game
 startGame();
+
+// Initialize zoom prevention and start the game
+initZoomPrevention();

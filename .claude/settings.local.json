@@ -2,7 +2,17 @@
   "permissions": {
     "allow": [
       "Bash(findstr:*)",
-      "Bash(ls -la \"C:\\\\workspace\\\\mini-medieval-ai\\\\assets\\\\maps\"\" 2>/dev/null || dir \"C:workspacemini-medieval-aiassetsmaps\"\")"
+      "Bash(ls -la \"C:\\\\workspace\\\\mini-medieval-ai\\\\assets\\\\maps\"\" 2>/dev/null || dir \"C:workspacemini-medieval-aiassetsmaps\"\")",
+      "Bash(ls:*)",
+      "Bash(dir /b \"C:\\\\workspace\\\\mini-medieval-ai\\\\*.js\")",
+      "Bash(npm start)",
+      "Bash(timeout:*)",
+      "Bash(netstat:*)",
+      "Bash(taskkill /PID 31196 /F)",
+      "Bash(ping:*)",
+      "Bash(curl:*)",
+      "Bash(node --check:*)"
     ]
-  }
+  },
+  "outputStyle": "default"
 }
