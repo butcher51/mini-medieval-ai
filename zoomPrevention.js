@@ -4,11 +4,15 @@
  */
 export function initZoomPrevention() {
     // Prevent browser zoom from Ctrl+scroll
-    window.addEventListener("wheel", (e) => {
-        if (e.ctrlKey) {
-            e.preventDefault();
-        }
-    }, { passive: false });
+    window.addEventListener(
+        "wheel",
+        (e) => {
+            if (e.ctrlKey) {
+                e.preventDefault();
+            }
+        },
+        { passive: false },
+    );
 
     // Prevent browser zoom from keyboard shortcuts (Ctrl/Cmd + +/-/0)
     window.addEventListener("keydown", (e) => {

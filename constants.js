@@ -32,4 +32,4 @@ export const ENEMY_POSITIONS = [
 export const INITAL_MAP = "forrest-0";
 
 // Save system version - increment when save format changes
-export const SAVE_VERSION = 15;
+export const SAVE_VERSION = 16;

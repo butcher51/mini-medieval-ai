@@ -1,7 +1,7 @@
 import { findPath, isPathInRange } from "./astar.js";
 import { Player } from "./Player.js";
 import { Enemy } from "./Enemy.js";
-import { AnimationController } from "./AnimationController.js";
+import { AssetLoader } from "./AssetLoader.js";
 import { ZOOM_LEVEL, BASE_TILE_SIZE, TILE_SIZE, PLAYER_MOVE_POINTS, ENEMY_POSITIONS, MOVEMENT_STEP_DELAY, INITAL_MAP } from "./constants.js";
 import { createGameState } from "./gameState.js";
 import { saveManager } from "./SaveManager.js";
@@ -36,67 +36,23 @@ let MAP_HEIGHT = 0;
 let gameWidth = 0;
 let gameHeight = 0;
 
-// Game state
-let gameMap = null;
-let gameMapAnimations = null;
+// Map derived state (set by initialize function)
 let gameMapAnimationIndexes = null;
-let tilesetImage = null;
-let iconsImage = null;
-let iconsData = null;
-let tilesetData = null;
 let collisionLayer = null;
 let objectsLayer = null;
 
-async function loadUI() {
-    iconsImage = await loadImage("assets/icons.png");
-    iconsData = await fetch("assets/icons.json").then((res) => res.json());
-}
+// Main game loop
+let lastTime = 0;
 
-// Load map data
-async function loadMap(mapName) {
-    try {
-        const response = await fetch(`assets/maps/${mapName}.json`);
-        gameMap = await response.json();
+// Player object
+const player = new Player("It's me", TILE_SIZE * 2, TILE_SIZE * 2, TILE_SIZE, TILE_SIZE);
 
-        const animationsResponse = await fetch("assets/maps/map-animations.json");
-        gameMapAnimations = await animationsResponse.json();
+// Game objects (enemies)
+const enemies = ENEMY_POSITIONS.map((pos) => new Enemy(pos.id, pos.x, pos.y, TILE_SIZE, TILE_SIZE));
 
-        // Set map dimensions
-        MAP_WIDTH = gameMap.width;
-        MAP_HEIGHT = gameMap.height;
+// Game state
+let gameState = createGameState();
 
-        gameMapAnimationIndexes = Array.from({ length: MAP_HEIGHT }, () => Array(MAP_WIDTH).fill(null));
-
-        // Calculate the game area size
-        gameWidth = MAP_WIDTH * TILE_SIZE;
-        gameHeight = MAP_HEIGHT * TILE_SIZE;
-
-        // Find collision layer
-        collisionLayer = gameMap.layers.find((layer) => layer.class === "collision");
-        if (!collisionLayer) {
-            throw new Error("No collision layer found in map data");
-        }
-
-        // Find object layer
-        objectsLayer = gameMap.layers.find((layer) => layer.class === "objects");
-        if (!objectsLayer) {
-            throw new Error("No objects layer found in map data");
-        }
-
-        // Load tileset
-        const tilesetSource = gameMap.tilesets[0].source;
-        const tilesetName = tilesetSource.split("/").pop().replace(".tsx", "").toLowerCase();
-
-        // Load tileset data
-        const tilesetResponse = await fetch(`assets/${tilesetName}.json`);
-        tilesetData = await tilesetResponse.json();
-
-        // Load tileset image with promise
-        tilesetImage = await loadImage(`assets/${tilesetName}.png`);
-    } catch (error) {
-        console.error("Error loading map:", error);
-    }
-}
 
 /**
  * @param {string} targetObject
@@ -122,6 +78,11 @@ function getTilePosition(tileIndex) {
         return null;
     } // Empty tile
 
+    const tilesetData = AssetLoader.getInstance().getCurrentTileset().data;
+    if (!tilesetData) {
+        return null;
+    }
+
     tileIndex--; // Convert to 0-based index
     const tilesPerRow = Math.floor(tilesetData.imagewidth / BASE_TILE_SIZE);
     const row = Math.floor(tileIndex / tilesPerRow);
@@ -132,15 +93,6 @@ function getTilePosition(tileIndex) {
         y: row * BASE_TILE_SIZE,
     };
 }
-
-// Player object
-const player = new Player("It's me", TILE_SIZE * 2, TILE_SIZE * 2, TILE_SIZE, TILE_SIZE);
-
-// Game objects (enemies)
-const enemies = ENEMY_POSITIONS.map((pos) => new Enemy(pos.id, pos.x, pos.y, TILE_SIZE, TILE_SIZE));
-
-// Game state
-let gameState = createGameState();
 
 function isTileCollidable(x, y) {
     if (!collisionLayer) {
@@ -159,6 +111,10 @@ function isTileCollidable(x, y) {
 }
 
 function drawObject(object, x, y) {
+    const assetLoader = AssetLoader.getInstance();
+    const iconsData = assetLoader.getUIIconsData();
+    const iconsImage = assetLoader.getUIIcons();
+
     if (object.properties && iconsData && iconsImage) {
         const iconProp = object.properties.find((prop) => prop.name === "icon");
         if (iconProp && iconProp.value) {
@@ -175,10 +131,15 @@ function drawObject(object, x, y) {
 
 // Draw map layers
 function drawMapLayers() {
-    if (!gameMap || !tilesetImage || !tilesetData) {
+    const assetLoader = AssetLoader.getInstance();
+    const gameMap = assetLoader.getCurrentMap();
+    const tileset = assetLoader.getCurrentTileset();
+    const gameMapAnimations = assetLoader.getMapAnimations();
+
+    if (!gameMap || !tileset.image || !tileset.data) {
         return;
     }
-    if (!tilesetImage.complete) {
+    if (!tileset.image.complete) {
         return;
     } // Make sure image is fully loaded
 
@@ -242,7 +203,7 @@ function drawMapLayers() {
                 const xPos = x * BASE_TILE_SIZE;
                 const yPos = y * BASE_TILE_SIZE;
 
-                ctx.drawImage(tilesetImage, pos.x, pos.y, BASE_TILE_SIZE, BASE_TILE_SIZE, xPos, yPos, BASE_TILE_SIZE, BASE_TILE_SIZE);
+                ctx.drawImage(tileset.image, pos.x, pos.y, BASE_TILE_SIZE, BASE_TILE_SIZE, xPos, yPos, BASE_TILE_SIZE, BASE_TILE_SIZE);
             }
         }
     });
@@ -409,8 +370,8 @@ function update(deltaTime) {
     }
 }
 
-// Main game loop
-let lastTime = 0;
+
+
 function gameLoop(timestamp) {
     // Calculate delta time
     const deltaTime = timestamp - lastTime;
@@ -429,32 +390,93 @@ function gameLoop(timestamp) {
     requestAnimationFrame(gameLoop);
 }
 
+/**
+ * Show error screen when asset loading fails
+ * @param {Error} error - The error that occurred
+ */
+function showErrorScreen(error) {
+    ctx.fillStyle = "#120e23";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = "white";
+    ctx.font = "24px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText("Failed to load game assets", canvas.width / 2, canvas.height / 2 - 40);
+
+    ctx.font = "16px Arial";
+    ctx.fillStyle = "#ff6b6b";
+    ctx.fillText(error.message, canvas.width / 2, canvas.height / 2);
+
+    ctx.fillStyle = "#888";
+    ctx.font = "14px Arial";
+    ctx.fillText("Check the browser console for details", canvas.width / 2, canvas.height / 2 + 40);
+}
+
 // Start the game
 async function startGame() {
     try {
-        await AnimationController.loadAnimations();
-        await loadUI();
+        // Configure AssetLoader singleton with progress callback
+        const assetLoader = AssetLoader.getInstance();
+        assetLoader.setProgressCallback((progress) => {
+            // Optional: Could show loading screen here
+            console.log(`Loading progress: ${Math.round(progress * 100)}%`);
+        });
 
+        // Load static assets (character sprites, UI icons, map animations)
+        await assetLoader.loadStaticAssets();
+
+        // Determine which map to load
         const save = saveManager.getCurrentMap();
         const mapToLoad = save?.targetMap || INITAL_MAP;
 
-        await loadMap(mapToLoad);
+        // Load initial map
+        await assetLoader.loadMap(mapToLoad);
 
         // Save the initial map if no save exists
         if (!save) {
             saveManager.setCurrentMap(mapToLoad);
         }
 
+        // Initialize game state
         await initialize(save?.targetObject);
 
+        // Start game loop
         gameLoop();
     } catch (error) {
         console.error("Error starting game:", error);
+        showErrorScreen(error);
     }
 }
 
 async function initialize(targetObject) {
     gameState = createGameState();
+
+    // Extract derived state from loaded map
+    const gameMap = AssetLoader.getInstance().getCurrentMap();
+    if (gameMap) {
+        // Set map dimensions
+        MAP_WIDTH = gameMap.width;
+        MAP_HEIGHT = gameMap.height;
+
+        // Initialize animation indexes
+        gameMapAnimationIndexes = Array.from({ length: MAP_HEIGHT }, () => Array(MAP_WIDTH).fill(null));
+
+        // Calculate the game area size
+        gameWidth = MAP_WIDTH * TILE_SIZE;
+        gameHeight = MAP_HEIGHT * TILE_SIZE;
+
+        // Find collision layer
+        collisionLayer = gameMap.layers.find((layer) => layer.class === "collision");
+        if (!collisionLayer) {
+            throw new Error("No collision layer found in map data");
+        }
+
+        // Find object layer
+        objectsLayer = gameMap.layers.find((layer) => layer.class === "objects");
+        if (!objectsLayer) {
+            throw new Error("No objects layer found in map data");
+        }
+    }
 
     player.initialize();
     movePlayerToTarget(targetObject || "start");
@@ -767,17 +789,6 @@ function isPlayerTile(x, y) {
     return Math.floor(player.x / BASE_TILE_SIZE) === x && Math.floor(player.y / BASE_TILE_SIZE) === y;
 }
 
-async function loadImage(imageSrc) {
-    // Load UI assets
-    const image = new Image();
-    await new Promise((resolve, reject) => {
-        image.onload = resolve;
-        image.onerror = reject;
-        image.src = imageSrc;
-    });
-    return image;
-}
-
 async function delay(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -820,7 +831,6 @@ function getDoorTarget(x, y) {
 }
 
 async function changeMap(target) {
-
     // Save the new map name
     saveManager.setCurrentMap(target);
 
@@ -828,8 +838,9 @@ async function changeMap(target) {
     gameState = createGameState();
 
     // Load new map
-    await loadMap(target.targetMap);
+    await AssetLoader.getInstance().loadMap(target.targetMap);
 
+    // Initialize derived state from new map
     initialize(target.targetObject);
 }
 
